@@ -8,10 +8,11 @@ This project is built using the NestJS framework. It includes various features s
 ## Prerequisites
 Before running this project, ensure you have the following installed on your system:
 
-- **Node.js** (v16 or higher)
-- **Docker** (latest version)
-- **Docker Compose** (latest version)
-- **npm** (v7 or higher)
+- **Node.js** 
+- **Docker** 
+- **Docker Compose** 
+- **Redis**
+- **npm** 
 
 ---
 
