@@ -52,7 +52,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/auth/login",
+					"raw": "http://localhost:3000/login",
 					"protocol": "http",
 					"host": [
 						"localhost"
