@@ -65,6 +65,22 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "orders by page",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "orders with sorting",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	]
 }

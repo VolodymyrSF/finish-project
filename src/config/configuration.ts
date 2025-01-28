@@ -27,12 +27,5 @@ export default (): Config => ({
   },
 
 });
-console.log('Database Config:', {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  username: process.env.POSTGRES_USERNAME,
-  password: process.env.POSTGRES_PASSWORD,
-  name: process.env.DB_NAME,
-});
 
 
