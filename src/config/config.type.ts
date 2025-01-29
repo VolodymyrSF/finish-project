@@ -19,7 +19,7 @@ export type DatabaseConfig = {
 export type RedisConfig = {
   host: string;
   port: number;
-  // password: string;
+  password: string;
 };
 export type JwtConfig = {
   accessSecret: string;

@@ -18,6 +18,7 @@ export default (): Config => ({
   redis: {
     host: process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+    password:process.env.REDIS_PASSWORD,
   },
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET ,

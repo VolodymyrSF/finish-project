@@ -15,7 +15,7 @@ import { RedisService } from './services/redis.service';
         return new Redis({
           port: config.port || 6379,
           host: config.host,
-         // password: config.password,
+          password: config.password,
         });
       },
       inject: [ConfigService],
