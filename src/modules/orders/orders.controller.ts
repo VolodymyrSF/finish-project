@@ -1,12 +1,20 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { OrderAccessGuard } from '../guards/order-access.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UserEntity } from '../../database/entities/user.entity';
+import { JwtAccessGuard } from '../guards/jwt-access.guard';
+import { AddCommentDto } from './dto/add-comment.dto';
+import { BaseCommentDto } from './dto/base-comment.dto';
+import { Status } from '../../database/entities/enums/order-status.enum';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
+  @UseGuards(JwtAccessGuard)
   @ApiQuery({
     name: 'page',
     required: false,
@@ -54,5 +62,18 @@ export class OrdersController {
       ...result,
       page,
     };
+  }
+
+  @Post(':id/comment')
+  @UseGuards(JwtAccessGuard, OrderAccessGuard)
+  @ApiOperation({ summary: 'Add a comment to an order' })
+  @ApiResponse({ status: 201, description: 'Comment added successfully', type: BaseCommentDto })  // Вказуємо тип у відповіді
+  async addComment(
+    @Param('id') id: number,
+    @Body() addCommentDto: AddCommentDto,
+    @CurrentUser() user: UserEntity,
+  ): Promise<{ comment: BaseCommentDto; status: Status; manager: string }> {  // Вказуємо тип поверненого результату
+    const result = await this.ordersService.addCommentToOrder(id, addCommentDto.comment, user);
+    return result;  // Повертаємо результат
   }
 }

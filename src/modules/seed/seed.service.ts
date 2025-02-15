@@ -7,7 +7,8 @@ import { UserRepository } from '../repository/services/user.repository';
 import { TokenService } from '../auth/services/token.service';
 import { RoleEnum } from '../../database/entities/enums/role.enum';
 import { Role } from '../../enums/role.enum';
-import { RoleEntity } from '../../database/entities/role.entity'; // Імпортуємо генератор UUID
+import { RoleEntity } from '../../database/entities/role.entity';
+import { ManagerRepository } from '../repository/services/manager.repository'; // Імпортуємо генератор UUID
 
 @Injectable()
 export class SeedService {
@@ -15,11 +16,13 @@ export class SeedService {
     private readonly roleRepository: RoleRepository,
     private readonly userRepository: UserRepository,
     private readonly tokenService: TokenService,
+    private readonly managerRepository: ManagerRepository,
   ) {}
 
   async seed() {
     await this.createRoles();
     await this.createAdminUser();
+    await this.createManagerUser();
   }
 
   private async createRoles() {
@@ -60,6 +63,39 @@ export class SeedService {
       });
 
       await this.userRepository.save(newAdmin);
+
+
+
+    }}
+  private async createManagerUser() {
+    const managerUser = await this.userRepository.findOne({
+      where: { email: 'manager@example.com' },
+    });
+
+    if (!managerUser) {
+      const managerRole = await this.roleRepository.findOne({ where: { name: RoleEnum.MANAGER } });
+
+      const hashedPassword = await bcrypt.hash('manager', 10);
+
+      const newManager = this.userRepository.create({
+        email: 'manager@example.com',
+        password: hashedPassword,
+        name: 'manager',
+        role: managerRole,
+      });
+
+      // Збережемо користувача в таблиці users
+      const savedManager = await this.userRepository.save(newManager);
+
+      // Тепер додамо того самого користувача в таблицю managers
+      const newManagerEntity = this.managerRepository.create({
+        id: savedManager.id,  // Використовуємо id користувача
+        name: 'manager',
+        email: savedManager.email,
+        phone: '1234567890', // Додаємо номер телефону, якщо потрібно
+      });
+
+      await this.managerRepository.save(newManagerEntity);
     }
   }
 }

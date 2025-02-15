@@ -25,7 +25,7 @@ export class UserEntity {
   @Column()
   password: string;
 
-  @ManyToOne(() => RoleEntity, (role) => role.users, { eager: true }) // Зв'язок з ролями
+  @ManyToOne(() => RoleEntity, (role) => role.users, { eager: true })
   role: RoleEntity;
 
   @OneToMany(() => RefreshTokenEntity, (entity) => entity.user)

@@ -6,10 +6,12 @@ import { AppModule } from './app.module';
 import { SwaggerHelper } from './helpers/swagger.helpers';
 import { AppConfig } from './config/config.type';
 import { SeedService } from '../src/modules/seed/seed.service';
+import cookieParser from 'cookie-parser';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
