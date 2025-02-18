@@ -8,6 +8,7 @@ import { JwtAccessGuard } from '../guards/jwt-access.guard';
 import { AddCommentDto } from './dto/add-comment.dto';
 import { BaseCommentDto } from './dto/base-comment.dto';
 import { Status } from '../../database/entities/enums/order-status.enum';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Controller('orders')
 export class OrdersController {
@@ -67,13 +68,23 @@ export class OrdersController {
   @Post(':id/comment')
   @UseGuards(JwtAccessGuard, OrderAccessGuard)
   @ApiOperation({ summary: 'Add a comment to an order' })
-  @ApiResponse({ status: 201, description: 'Comment added successfully', type: BaseCommentDto })  // Вказуємо тип у відповіді
+  @ApiResponse({ status: 201, description: 'Comment added successfully', type: BaseCommentDto })
   async addComment(
     @Param('id') id: number,
     @Body() addCommentDto: AddCommentDto,
     @CurrentUser() user: UserEntity,
-  ): Promise<{ comment: BaseCommentDto; status: Status; manager: string }> {  // Вказуємо тип поверненого результату
+  ): Promise<{ comment: BaseCommentDto; status: Status; manager: string }> {
     const result = await this.ordersService.addCommentToOrder(id, addCommentDto.comment, user);
-    return result;  // Повертаємо результат
+    return result;
+  }
+  @Patch(':id')
+  @UseGuards(JwtAccessGuard, OrderAccessGuard)
+  @ApiOperation({ summary: 'Edit order' })
+  async updateOrder(
+    @Param('id') id: number,
+    @Body() updateOrderDto: UpdateOrderDto,
+    @CurrentUser() user: UserEntity,
+  ) {
+    return await this.ordersService.updateOrder(id, updateOrderDto, user);
   }
 }

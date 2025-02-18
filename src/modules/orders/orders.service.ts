@@ -1,14 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { OrdersRepository } from '../repository/services/orders.repository';
 import { UserEntity } from '../../database/entities/user.entity';
 import { Status } from '../../database/entities/enums/order-status.enum';
 import { ManagerRepository } from '../repository/services/manager.repository';
 import { BaseCommentDto } from './dto/base-comment.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
+import { applyOrderUpdateMapping } from '../../helpers/order-update.mapper';
+import { GroupRepository } from '../repository/services/group.repository';
 
 @Injectable()
 export class OrdersService {
   constructor(private readonly ordersRepository: OrdersRepository,
-  private readonly managersRepository: ManagerRepository, // додаємо репозиторій менеджерів
+  private readonly managersRepository: ManagerRepository,
+  private readonly groupRepository: GroupRepository,
 ) {}
 
   async getOrders(
@@ -62,7 +66,7 @@ export class OrdersService {
     }
     const newComment = {
       text: comment,
-      author: user.name,  // Прізвище користувача
+      author: user.name,
       createdAt: new Date(),
     };
 
@@ -77,4 +81,29 @@ export class OrdersService {
     };
   }
 
+  async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity) {
+    const order = await this.ordersRepository.findOne({
+      where: { id: id.toString() },
+      relations: ['manager', 'group'],
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    if (order.manager && order.manager.id !== user.id) {
+      throw new ForbiddenException('You do not have permission to update this order');
+    }
+
+    if (dto.groupName) {
+      let group = await this.groupRepository.findOne({ where: { name: dto.groupName } });
+      if (!group) {
+        group = this.groupRepository.create({ name: dto.groupName, description: '' });
+        group = await this.groupRepository.save(group);
+      }
+      order.group = group;
+    }
+
+    applyOrderUpdateMapping(order, dto);
+
+    return await this.ordersRepository.save(order);
+  }
 }
