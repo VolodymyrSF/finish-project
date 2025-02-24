@@ -7,6 +7,7 @@ import { MysqlModule } from './modules/mysql/mysql.module';
 import configuration from './config/configuration';
 import { SeedModule } from './modules/seed/seed.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { ManagersModule } from './modules/managers/managers.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     MysqlModule,
     SeedModule,
     OrdersModule,
+    ManagersModule
   ],
 })
 export class AppModule {}

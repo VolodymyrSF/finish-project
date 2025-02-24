@@ -5,6 +5,7 @@ import { TokenService } from '../auth/services/token.service';
 import { AuthCacheService } from '../auth/services/auth-cache-service';
 import { UserRepository } from '../repository/services/user.repository';
 import { TokenType } from '../auth/models/enums/token-type.enum';
+import { ManagerRepository } from '../repository/services/manager.repository';
 
 @Injectable()
 export class JwtAccessGuard implements CanActivate {
@@ -13,6 +14,7 @@ export class JwtAccessGuard implements CanActivate {
     private readonly tokenService: TokenService,
     private readonly authCacheService: AuthCacheService,
     private readonly userRepository: UserRepository,
+    private readonly managerRepository: ManagerRepository,
   ) {
   }
 
@@ -47,25 +49,44 @@ export class JwtAccessGuard implements CanActivate {
       throw new UnauthorizedException('Access token is not found in cache');
     }
 
-
     const user = await this.userRepository.findOne({
       where: { id: payload.userId },
     });
 
-    if (!user) {
-      throw new UnauthorizedException('User not found');
+    let userData = null;
+
+    if (user) {
+      userData = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.created_at,
+        updatedAt: user.updated_at,
+      };
+    } else {
+      const manager = await this.managerRepository.findOne({
+        where: { id: payload.userId },
+      });
+
+      if (manager) {
+        userData = {
+          id: manager.id,
+          name: manager.name,
+          surname: manager.surname,
+          email: manager.email,
+          phone: manager.phone,
+          isActive: manager.isActive,
+          isBanned: manager.isBanned,
+          createdAt: manager.created_at,
+          updatedAt: manager.updated_at,
+        };
+      } else {
+        throw new UnauthorizedException('User or manager not found');
+      }
     }
 
-
-    request.user = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
-    };
-
+    request.user = userData;
     return true;
   }
-}
+  }

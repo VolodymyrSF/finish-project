@@ -42,6 +42,13 @@ export class TokenService {
     }
   }
 
+  public async signToken(payload: any, expiresIn: string): Promise<string> {
+    return await this.jwtService.signAsync(payload, {
+      secret: this.jwtConfig.accessSecret,
+      expiresIn,
+    });
+  }
+
   private getSecret(type: TokenType): string {
     let secret: string;
     switch (type) {

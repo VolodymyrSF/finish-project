@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { OrdersRepository } from '../repository/services/orders.repository';
 import { UserEntity } from '../../database/entities/user.entity';
 import { Status } from '../../database/entities/enums/order-status.enum';
@@ -7,6 +7,10 @@ import { BaseCommentDto } from './dto/base-comment.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { applyOrderUpdateMapping } from '../../helpers/order-update.mapper';
 import { GroupRepository } from '../repository/services/group.repository';
+import { UpdateStatus } from '../../database/entities/enums/update-status.enum';
+import { Equal, FindOptionsWhere, Like } from 'typeorm';
+import { FilterOrdersDto } from './dto/filter-orders.dto';
+import { OrderEntity } from '../../database/entities/orders.entity';
 
 @Injectable()
 export class OrdersService {
@@ -105,5 +109,41 @@ export class OrdersService {
     applyOrderUpdateMapping(order, dto);
 
     return await this.ordersRepository.save(order);
+  }
+
+  async getFilteredOrders(filters: FilterOrdersDto, user: UserEntity) {
+    //const where: FindOptionsWhere<Partial<OrderEntity>> = {};
+
+    const where: FindOptionsWhere<any> = {};
+
+    const textFields = ['name', 'surname', 'email', 'phone', 'course', 'course_format', 'course_type'];
+    textFields.forEach(field => {
+      if (filters[field]) {
+        where[field] = Like(`%${filters[field]}%`);
+      }
+    });
+
+    const numberFields = ['age', 'sum'];
+    numberFields.forEach(field => {
+      if (filters[field] !== undefined) {
+        where[field] = filters[field];
+      }
+    });
+
+    if (filters.status) {
+      if (!Object.values(UpdateStatus).includes(filters.status as UpdateStatus)) {
+        throw new BadRequestException(`Invalid status: ${filters.status}. Allowed values: ${Object.values(UpdateStatus).join(', ')}`);
+      }
+      where.status = Equal(filters.status as Status | null);
+      //where.status = filters.status;
+
+    }
+
+    if (filters.onlyMy) {
+     where.manager = { id: user.id };
+      //where.managerId = user.id;
+    }
+
+    return await this.ordersRepository.find({ where });
   }
 }

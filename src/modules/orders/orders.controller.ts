@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { ApiOperation, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { OrderAccessGuard } from '../guards/order-access.guard';
@@ -9,6 +9,9 @@ import { AddCommentDto } from './dto/add-comment.dto';
 import { BaseCommentDto } from './dto/base-comment.dto';
 import { Status } from '../../database/entities/enums/order-status.enum';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { FilterOrdersDto } from './dto/filter-orders.dto';
+import { exportOrdersToExcel } from '../../helpers/excel-export.helper';
+import { Response } from 'express';
 
 @Controller('orders')
 export class OrdersController {
@@ -86,5 +89,20 @@ export class OrdersController {
     @CurrentUser() user: UserEntity,
   ) {
     return await this.ordersService.updateOrder(id, updateOrderDto, user);
+  }
+
+  @Get('filter-orders')
+  @UseGuards(JwtAccessGuard)
+  @ApiOperation({ summary: 'Отримати заявки з фільтрацією' })
+  async getFilteredOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity,) {
+    return await this.ordersService.getFilteredOrders(filters, user);
+  }
+
+  @Get('export')
+  @UseGuards(JwtAccessGuard)
+  @ApiOperation({ summary: 'Експорт заявок в Excel' })
+  async exportOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity, @Res() res: Response) {
+    const orders = await this.ordersService.getFilteredOrders(filters, user);
+    return exportOrdersToExcel(orders, res);
   }
 }

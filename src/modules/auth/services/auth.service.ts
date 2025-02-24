@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { RefreshTokenRepository } from '../../repository/services/refresh-token.repository';
@@ -9,6 +9,12 @@ import { AuthCacheService } from './auth-cache-service';
 import { TokenService } from './token.service';
 import { RoleRepository } from '../../repository/services/role.repository';
 import { UserMapper } from '../../user/user.mapper';
+import { ManagerRepository } from '../../repository/services/manager.repository';
+import { JwtService } from '@nestjs/jwt';
+import { RoleEnum } from '../../../database/entities/enums/role.enum';
+import { ManagerAuthResDto } from '../models/dto/res/manager.auth.res.dto';
+import { ManagerSignInReqDto } from '../models/dto/req/manager.sign-in.req.dto';
+import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,54 +24,11 @@ export class AuthService {
     private readonly userRepository: UserRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly roleRepository: RoleRepository,
+    private readonly managersRepository: ManagerRepository,
+    private readonly jwtService: JwtService,
+
   ) {}
 
-  /*
-  public async signUp(dto: SignUpReqDto): Promise<AuthResDto> {
-    await this.isEmailNotExistOrThrow(dto.email);
-
-    const password = await bcrypt.hash(dto.password, 10);
-
-    const role = await this.roleRepository.findOne({
-      where: { name: dto.roleName as RoleEnum },
-    });
-    if (!role) {
-      throw new Error(`Role with name ${dto.roleName} not found`);
-    }
-
-
-
-
-    const user = this.userRepository.create({
-      email: dto.email,
-      password,
-      name: dto.name,
-      role,
-    });
-
-    const savedUser = await this.userRepository.save(user);
-
-    const tokens = await this.tokenService.generateAuthTokens({
-      userId: savedUser.id,
-      roleId: savedUser.role.id,
-    });
-
-    await Promise.all([
-      this.authCacheService.saveToken(
-        tokens.accessToken,
-        savedUser.id,
-      ),
-      this.refreshTokenRepository.save(
-        this.refreshTokenRepository.create({
-          user_id: savedUser.id,
-          refreshToken: tokens.refreshToken,
-        }),
-      ),
-    ]);
-
-    return { user: UserMapper.toResDto(savedUser), tokens };
-  }
-*/
   public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
@@ -111,4 +74,96 @@ export class AuthService {
       throw new Error('Email already exists');
     }
   }
+
+/*
+  public async managerSignIn(dto: SignInReqDto): Promise<AuthResDto> {
+    console.log('Searching for manager with email:', dto.email);
+
+    const manager = await this.managersRepository.findOne({
+      where: { email: dto.email.toLowerCase() },
+      select: ['id', 'password',  'name', 'email','isActive','isBanned'],
+    });
+
+    if (!manager) {
+      throw new UnauthorizedException('Manager not found');
+    }
+
+    console.log('Manager found:', manager);
+
+    console.log('Comparing password:', dto.password);
+
+    const isPasswordValid = await bcrypt.compare(dto.password, manager.password);
+    console.log('Password valid:', isPasswordValid);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    const userResDto = UserMapper.toManagerResDto(manager);
+
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: manager.id,
+      roleId: RoleEnum.MANAGER,
+    });
+
+    await Promise.all([
+      this.authCacheService.saveToken(
+        tokens.accessToken,
+        manager.id,
+      ),
+      this.refreshTokenRepository.save(
+        this.refreshTokenRepository.create({
+          manager_id: manager.id,
+          user_id: null,
+          refreshToken: tokens.refreshToken,
+        }),
+      ),
+    ]);
+
+    return { user: userResDto, tokens };
+
+  }
+
+ */
+
+
+  public async managerSignIn(dto: ManagerSignInReqDto): Promise<{ user: ManagerAuthResDto, tokens: TokenPairResDto }> {
+
+    const manager = await this.managersRepository.findOne({
+      where: { email: dto.email },
+      select: ['id', 'password', 'name', 'surname', 'email', 'phone', 'isActive', 'isBanned', 'created_at', 'updated_at'],
+    });
+
+
+    if (!manager) {
+      throw new UnauthorizedException('Manager not found');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, manager.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid password');
+    }
+
+    //const managerResDto: ManagerAuthResDto = UserMapper.toManagerAuthResDto(manager);
+
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: manager.id,
+      roleId: RoleEnum.MANAGER,
+    });
+
+    await Promise.all([
+      this.authCacheService.saveToken(tokens.accessToken, manager.id),
+      this.refreshTokenRepository.save(
+        this.refreshTokenRepository.create({
+          manager_id: manager.id,
+          user_id: null,
+          refreshToken: tokens.refreshToken,
+        }),
+      ),
+    ]);
+
+
+
+    return { user: UserMapper.toManagerAuthResDto(manager), tokens };
+  }
+
 }
