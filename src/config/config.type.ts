@@ -26,5 +26,9 @@ export type JwtConfig = {
   accessExpiresIn: number;
   refreshSecret: string;
   refreshExpiresIn: number;
+  activationSecret: string;
+  activationExpiresIn: number;
+  resetSecret: string;
+  resetExpiresIn: number;
 };
 

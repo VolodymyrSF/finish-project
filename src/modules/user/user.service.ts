@@ -23,7 +23,7 @@ export class UsersService {
     });
     if (existingUser) {
       throw new ConflictException(
-        `User with email ${createUserDto.email} already exists`,
+        `Користувач з email ${createUserDto.email} вже зареєстрований`,
       );
     }
 
@@ -40,7 +40,7 @@ export class UsersService {
       where: { id: String(id) },
     });
     if (!user) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new NotFoundException(`Користувач з id ${id} не знайдений`);
     }
     return user;
   }

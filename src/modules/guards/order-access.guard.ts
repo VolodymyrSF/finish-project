@@ -11,10 +11,10 @@ export class OrderAccessGuard implements CanActivate {
     const orderId = request.params.id;
 
     if (!orderId) {
-      throw new ForbiddenException('Invalid request, user is not authenticated or you are not a manager');
+      throw new ForbiddenException('Користувач не автентифікований');
     }
     if( !currentUser){
-      throw new ForbiddenException('problem with current user');
+      throw new ForbiddenException('Поточний користувач не знайдений');
     }
 
 
@@ -24,11 +24,11 @@ export class OrderAccessGuard implements CanActivate {
     });
 
     if (!order) {
-      throw new ForbiddenException('Order not found');
+      throw new ForbiddenException('Заявки не знайдено');
     }
 
     if (order.manager && order.manager.id !== currentUser.id) {
-      throw new ForbiddenException('You do not have access to this order');
+      throw new ForbiddenException('У вас немає доступу до цієї заявки');
     }
 
 

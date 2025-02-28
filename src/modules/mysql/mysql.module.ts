@@ -26,7 +26,7 @@ import { Config, DatabaseConfig } from '../../config/config.type';
               'src',
               'database',
               'entities',
-              '*.entity.js',  // шляхи до сутностей, можуть бути різні в залежності від вашої структури
+              '*.entity.js',
             ),
           ],
           migrations: [

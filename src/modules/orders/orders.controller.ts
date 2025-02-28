@@ -19,6 +19,7 @@ export class OrdersController {
 
   @Get()
   @UseGuards(JwtAccessGuard)
+  @ApiOperation({ summary: 'Отримання всіх заявок' })
   @ApiQuery({
     name: 'page',
     required: false,
@@ -70,8 +71,8 @@ export class OrdersController {
 
   @Post(':id/comment')
   @UseGuards(JwtAccessGuard, OrderAccessGuard)
-  @ApiOperation({ summary: 'Add a comment to an order' })
-  @ApiResponse({ status: 201, description: 'Comment added successfully', type: BaseCommentDto })
+  @ApiOperation({ summary: 'Додавання коментаря до заявки' })
+  @ApiResponse({ status: 201, description: 'Коментар успішно доданий', type: BaseCommentDto })
   async addComment(
     @Param('id') id: number,
     @Body() addCommentDto: AddCommentDto,
@@ -82,7 +83,7 @@ export class OrdersController {
   }
   @Patch(':id')
   @UseGuards(JwtAccessGuard, OrderAccessGuard)
-  @ApiOperation({ summary: 'Edit order' })
+  @ApiOperation({ summary: 'Редагування заявки' })
   async updateOrder(
     @Param('id') id: number,
     @Body() updateOrderDto: UpdateOrderDto,

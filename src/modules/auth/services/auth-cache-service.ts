@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config/dist/config.service';
 import { RedisService } from '../../redis/services/redis.service';
 import { Config, JwtConfig } from '../../../config/config.type';
 
+
+
 @Injectable()
 export class AuthCacheService {
   private jwtConfig: JwtConfig;
@@ -45,3 +47,4 @@ export class AuthCacheService {
     return `ACCESS_TOKEN:${userId}`;
   }
 }
+

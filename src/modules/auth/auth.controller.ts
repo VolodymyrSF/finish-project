@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { SignInReqDto } from './models/dto/req/sign-in.req.dto';
@@ -17,6 +17,7 @@ export class AuthController {
 
   @Post('admin-login')
   @SkipAuth()
+  @ApiOperation({ summary: 'Логін адміном' })
   public async signIn(
     @Body() dto: SignInReqDto,
     @Res() res: Response,
@@ -35,6 +36,7 @@ export class AuthController {
 
   @Post('manager-login')
   @SkipAuth()
+  @ApiOperation({ summary: 'Логін менеджером' })
   public async managerSignIn(
     @Body() dto: ManagerSignInReqDto,
     @Res() res: Response,
@@ -50,14 +52,13 @@ export class AuthController {
     res.redirect('/orders');
     return authManagerData.user;
   }
-
   @Post('logout')
   @UseGuards(JwtAccessGuard)
-  public async logout(@Res() res: Response): Promise<void> {
+  @ApiOperation({ summary: 'Вихід' })
+  public async logout(@Req() req, @Res() res: Response): Promise<void> {
+    await this.authService.logout(req.user.id, req.cookies.access_token);
+
     res.clearCookie('access_token');
-
-
-
-
+    res.status(200).send({ message: 'Ви успішно вийшли!' });
   }
 }

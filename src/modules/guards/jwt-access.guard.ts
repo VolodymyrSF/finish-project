@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { TokenService } from '../auth/services/token.service';
 import { AuthCacheService } from '../auth/services/auth-cache-service';
 import { UserRepository } from '../repository/services/user.repository';
-import { TokenType } from '../auth/models/enums/token-type.enum';
+import { TokenType } from '../../database/entities/enums/token-type.enum';
 import { ManagerRepository } from '../repository/services/manager.repository';
 
 @Injectable()
@@ -40,13 +40,13 @@ export class JwtAccessGuard implements CanActivate {
     const payload = await this.tokenService.verifyToken(accessToken, TokenType.ACCESS);
 
     if (!payload) {
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Недійсний токен');
     }
 
     const isAccessTokenExist = await this.authCacheService.isAccessTokenExist(payload.userId, accessToken);
 
     if (!isAccessTokenExist) {
-      throw new UnauthorizedException('Access token is not found in cache');
+      throw new UnauthorizedException('Токен доступу не знайдено');
     }
 
     const user = await this.userRepository.findOne({
@@ -82,7 +82,7 @@ export class JwtAccessGuard implements CanActivate {
           updatedAt: manager.updated_at,
         };
       } else {
-        throw new UnauthorizedException('User or manager not found');
+        throw new UnauthorizedException('Користувача не знайдено');
       }
     }
 

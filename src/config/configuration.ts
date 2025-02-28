@@ -25,6 +25,10 @@ export default (): Config => ({
     accessExpiresIn: parseInt(process.env.JWT_ACCESS_EXPIRES_IN , 10),
     refreshSecret: process.env.JWT_REFRESH_SECRET,
     refreshExpiresIn: parseInt(process.env.JWT_REFRESH_EXPIRES_IN, 10) || 86400,
+    activationSecret: process.env.JWT_ACTIVATION_SECRET,
+    activationExpiresIn: parseInt(process.env.JWT_ACTIVATION_EXPIRES_IN, 10) || 1800,
+    resetSecret: process.env.JWT_RESET_SECRET,
+    resetExpiresIn: parseInt(process.env.JWT_RESET_EXPIRES_IN, 10) || 1800,
   },
 
 });

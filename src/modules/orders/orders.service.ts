@@ -10,7 +10,6 @@ import { GroupRepository } from '../repository/services/group.repository';
 import { UpdateStatus } from '../../database/entities/enums/update-status.enum';
 import { Equal, FindOptionsWhere, Like } from 'typeorm';
 import { FilterOrdersDto } from './dto/filter-orders.dto';
-import { OrderEntity } from '../../database/entities/orders.entity';
 
 @Injectable()
 export class OrdersService {
@@ -50,7 +49,7 @@ export class OrdersService {
   ):  Promise<{ comment: BaseCommentDto; status: Status; manager: string }> {
     const order = await this.ordersRepository.findOne({ where: { id: orderId.toString() } });
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException('Заявки не знайдено');
     }
 
     if (order.status === null || order.status === Status.New) {
@@ -60,7 +59,7 @@ export class OrdersService {
     if (!order.manager) {
       const manager = await this.managersRepository.findOne({ where: { email: user.email } });
       if (!manager) {
-        throw new NotFoundException('Current user is not a manager');
+        throw new NotFoundException('Користувач не є менеджером');
       }
       order.manager = manager;
     }
@@ -91,11 +90,19 @@ export class OrdersService {
       relations: ['manager', 'group'],
     });
     if (!order) {
-      throw new NotFoundException('Order not found');
+      throw new NotFoundException('Заявки не знайдено');
     }
     if (order.manager && order.manager.id !== user.id) {
-      throw new ForbiddenException('You do not have permission to update this order');
+      throw new ForbiddenException('У вас немає прав для цієї заявки');
+    }else {
+      const manager = await this.managersRepository.findOne({ where: { email: user.email } });
+      if (!manager) {
+        throw new NotFoundException('Користувач не є менеджером');
+      }
+      order.manager = manager;
     }
+
+
 
     if (dto.groupName) {
       let group = await this.groupRepository.findOne({ where: { name: dto.groupName } });
@@ -112,7 +119,6 @@ export class OrdersService {
   }
 
   async getFilteredOrders(filters: FilterOrdersDto, user: UserEntity) {
-    //const where: FindOptionsWhere<Partial<OrderEntity>> = {};
 
     const where: FindOptionsWhere<any> = {};
 
@@ -135,13 +141,11 @@ export class OrdersService {
         throw new BadRequestException(`Invalid status: ${filters.status}. Allowed values: ${Object.values(UpdateStatus).join(', ')}`);
       }
       where.status = Equal(filters.status as Status | null);
-      //where.status = filters.status;
 
     }
 
     if (filters.onlyMy) {
      where.manager = { id: user.id };
-      //where.managerId = user.id;
     }
 
     return await this.ordersRepository.find({ where });
