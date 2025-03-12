@@ -10,6 +10,8 @@ import { GroupRepository } from '../repository/services/group.repository';
 import { UpdateStatus } from '../../database/entities/enums/update-status.enum';
 import { Equal, FindOptionsWhere, Like } from 'typeorm';
 import { FilterOrdersDto } from './dto/filter-orders.dto';
+import { ManagerResponseDto } from './dto/manager.res.dto';
+import { plainToClass, plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class OrdersService {
@@ -115,7 +117,15 @@ export class OrdersService {
 
     applyOrderUpdateMapping(order, dto);
 
-    return await this.ordersRepository.save(order);
+    const updatedOrder = await this.ordersRepository.save(order);
+
+    return {
+      ...updatedOrder,
+      manager: plainToInstance(ManagerResponseDto, updatedOrder.manager, {
+        excludeExtraneousValues: true,
+      }),
+    };
+
   }
 
   async getFilteredOrders(filters: FilterOrdersDto, user: UserEntity) {
@@ -129,7 +139,7 @@ export class OrdersService {
       }
     });
 
-    const numberFields = ['age', 'sum'];
+    const numberFields = ['age', 'sum', 'id'];
     numberFields.forEach(field => {
       if (filters[field] !== undefined) {
         where[field] = filters[field];
@@ -145,9 +155,28 @@ export class OrdersService {
     }
 
     if (filters.onlyMy) {
-     where.manager = { id: user.id };
+      where.manager = { id: user.id };
     }
 
-    return await this.ordersRepository.find({ where });
+    const orders = await this.ordersRepository.find({
+      where,
+      relations: ['manager', 'group'],
+    });
+    return orders.map(order => ({
+      ...order,
+      manager: order.manager ? {
+        id: order.manager.id,
+        name: order.manager.name,
+        surname: order.manager.surname,
+        email: order.manager.email,
+        phone: order.manager.phone,
+      } : null,
+      group: order.group ? {
+        id: order.group.id,
+        name: order.group.name,
+      } : null,
+    }));
+    //return orders;
   }
+
 }

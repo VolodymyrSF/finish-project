@@ -2,7 +2,7 @@ import * as ExcelJS from 'exceljs';
 import { OrderEntity } from '../database/entities/orders.entity';
 import { Response } from 'express';
 
-export async function exportOrdersToExcel(orders: OrderEntity[], res: Response) {
+export async function exportOrdersToExcel(orders:any[], res: Response) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Orders');
 
@@ -28,6 +28,10 @@ export async function exportOrdersToExcel(orders: OrderEntity[], res: Response) 
   ];
 
   orders.forEach(order => {
+    const commentsFormatted = order.comments
+      ? order.comments.map(comment => `${comment.text} (by ${comment.author}, on ${new Date(comment.createdAt).toLocaleString()})`).join('\n')
+      : '';
+
     worksheet.addRow({
       id: order.id,
       name: order.name || '',
@@ -44,7 +48,7 @@ export async function exportOrdersToExcel(orders: OrderEntity[], res: Response) 
       created_at: order.created_at ? new Date(order.created_at).toLocaleString() : '',
       message: order.message || '',
       utm: order.utm || '',
-      comments: order.comments || '',
+      comments: commentsFormatted,
       manager: order.manager ? order.manager.name : '',
       group: order.group ? order.group.name : '',
     });

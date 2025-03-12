@@ -4,6 +4,7 @@ import { IsOptional, IsString, IsBoolean, IsNumber, IsIn } from 'class-validator
 import { Transform } from 'class-transformer';
 
 export class FilterOrdersDto {
+
   @ApiPropertyOptional({ description: 'Номер сторінки', default: 1 })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -19,6 +20,12 @@ export class FilterOrdersDto {
   @IsOptional()
   @IsIn(['ASC', 'DESC'])
   order?: 'ASC' | 'DESC' = 'DESC';
+
+  @ApiPropertyOptional({ description: 'Фільтр по ID заявки' })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsNumber()
+  id?: number;
 
   @ApiPropertyOptional({ description: 'Фільтр по імені' })
   @IsOptional()

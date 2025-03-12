@@ -11,7 +11,7 @@
 			"name": "Auth",
 			"item": [
 				{
-					"name": "Admin Login",
+					"name": "Login",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -22,45 +22,17 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin\"\n}"
+							"raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"password\": \"admin\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:3000/admin-login",
+							"raw": "http://localhost:3000/login",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
-								"admin-login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Manager Login",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"viktor@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
-						},
-						"url": {
-							"raw": "http://localhost:3000/manager-login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"manager-login"
+								"login"
 							]
 						}
 					},
@@ -316,25 +288,6 @@
 			"name": "Orders",
 			"item": [
 				{
-					"name": "Get all orders (отримати всі заявки)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:3000/orders",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"orders"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Edit order (редагувати заявки)",
 					"request": {
 						"method": "PATCH",
@@ -346,10 +299,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"John\",\n  \"surname\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"0987654321\",\n  \"age\": 25,\n  \"course\": \"FE\",\n  \"course_format\": \"online\",\n  \"course_type\": \"pro\",\n  \"status\": \"New\",\n  \"sum\": 1200,\n  \"alreadyPaid\": 400\n}"
+							"raw": "    {\n  \"name\": \"John\",\n  \"surname\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"0987654321\",\n  \"age\": 25,\n  \"course\": \"FE\",\n  \"course_format\": \"online\",\n  \"course_type\": \"pro\",\n  \"status\": \"New\",\n  \"sum\": 1200,\n  \"alreadyPaid\": 400\n}"
 						},
 						"url": {
-							"raw": "http://localhost:3000/orders/{{orderId}}",
+							"raw": "http://localhost:3000/orders/463",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -357,7 +310,7 @@
 							"port": "3000",
 							"path": [
 								"orders",
-								"{{orderId}}"
+								"463"
 							]
 						}
 					},
@@ -366,7 +319,7 @@
 				{
 					"name": "Add comment to order (додати коментар)",
 					"request": {
-						"method": "PATCH",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
@@ -375,10 +328,10 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"text\": \"New comment from manager\"\n}"
+							"raw": "\n{\n  \"comment\": \"New comment from manager\"\n}"
 						},
 						"url": {
-							"raw": "http://localhost:3000/orders/{{orderId}}/comment",
+							"raw": "http://localhost:3000/orders/461/comment",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -386,7 +339,7 @@
 							"port": "3000",
 							"path": [
 								"orders",
-								"{{orderId}}",
+								"461",
 								"comment"
 							]
 						}
@@ -414,20 +367,19 @@
 					"response": []
 				},
 				{
-					"name": "Filter orders (фільтрація замовлень)",
+					"name": "Get orders(отримання заявок)",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:3000/orders/filter-orders",
+							"raw": "http://localhost:3000/orders?status=New",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
-								"orders",
-								"filter-orders"
+								"orders"
 							],
 							"query": [
 								{
@@ -437,52 +389,56 @@
 								},
 								{
 									"key": "surname",
-									"value": null,
+									"value": "Doe",
 									"disabled": true
 								},
 								{
 									"key": "email",
-									"value": null,
+									"value": "john.doe@example.com",
 									"disabled": true
 								},
 								{
 									"key": "phone",
-									"value": null,
+									"value": "0987654321",
 									"disabled": true
 								},
 								{
 									"key": "age",
-									"value": null,
+									"value": "25",
 									"disabled": true
 								},
 								{
 									"key": "course",
-									"value": null,
+									"value": "FE",
 									"disabled": true
 								},
 								{
 									"key": "course_format",
-									"value": null,
+									"value": "online",
 									"disabled": true
 								},
 								{
 									"key": "course_type",
-									"value": null,
+									"value": "pro",
 									"disabled": true
 								},
 								{
 									"key": "status",
-									"value": null,
-									"disabled": true
+									"value": "New"
 								},
 								{
 									"key": "sum",
-									"value": null,
+									"value": "1200\n",
 									"disabled": true
 								},
 								{
 									"key": "onlyMy",
 									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "id",
+									"value": "",
 									"disabled": true
 								}
 							]

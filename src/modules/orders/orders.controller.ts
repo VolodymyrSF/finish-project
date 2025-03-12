@@ -16,69 +16,9 @@ import { Response } from 'express';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
-/*
-  @Get()
-  @UseGuards(JwtAccessGuard)
-  @ApiOperation({ summary: 'Отримання всіх заявок' })
-  @ApiQuery({
-    name: 'page',
-    required: false,
-    description: 'Номер сторінки',
-    example: 1,
-  })
-  @ApiQuery({
-    name: 'orderBy',
-    required: false,
-    description: 'Колонка для сортування',
-    enum: [
-      'id',
-      'name',
-      'surname',
-      'email',
-      'phone',
-      'age',
-      'course',
-      'course_format',
-      'course_type',
-      'status',
-      'sum',
-      'alreadyPaid',
-      'created_at',
-    ],
-    example: 'created_at',
-  })
-  @ApiQuery({
-    name: 'order',
-    required: false,
-    description: 'Напрямок сортування',
-    enum: ['ASC', 'DESC'],
-    example: 'DESC',
-  })
-  async getOrders(
-    @Query('page') page: number = 1,
-    @Query('orderBy') orderBy: string = 'created_at',
-    @Query('order') order: 'ASC' | 'DESC' = 'DESC',
-  ) {
-    const limit = 25;
 
-    const result = await this.ordersService.getOrders(page, limit, orderBy, order);
 
-    return {
-      ...result,
-      page,
-    };
-  }
-
-  @Get('filter-orders')
-  @UseGuards(JwtAccessGuard)
-  @ApiOperation({ summary: 'Отримати заявки з фільтрацією' })
-  async getFilteredOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity,) {
-    return await this.ordersService.getFilteredOrders(filters, user);
-  }
-
- */
-
-  @Get('orders')
+  @Get('')
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Отримати заявки з фільтрацією, пагінацією та сортуванням' })
   async getOrders(
@@ -128,8 +68,6 @@ export class OrdersController {
     return await this.ordersService.updateOrder(id, updateOrderDto, user);
   }
 
-
-
   @Get('export')
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Експорт заявок в Excel' })
@@ -137,4 +75,8 @@ export class OrdersController {
     const orders = await this.ordersService.getFilteredOrders(filters, user);
     return exportOrdersToExcel(orders, res);
   }
+
+
+
+
 }

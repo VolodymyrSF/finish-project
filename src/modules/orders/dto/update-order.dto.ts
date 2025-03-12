@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsNumber } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Course } from '../../../database/entities/enums/course.enum';
 import { CourseType } from '../../../database/entities/enums/course-type.enum';
@@ -67,4 +67,14 @@ export class UpdateOrderDto {
   @IsOptional()
   @IsString()
   groupName?: string;
+
+  @ApiPropertyOptional({ description: 'Сума заявки', type: Number })
+  @IsOptional()
+  @IsNumber()
+  sum?: number;
+
+  @ApiPropertyOptional({ description: 'Частина суми, яка вже оплачена', type: Number })
+  @IsOptional()
+  @IsNumber()
+  alreadyPaid?: number;
 }
