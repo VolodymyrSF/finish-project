@@ -1,8 +1,25 @@
+
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsNumber } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, IsNumber, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class FilterOrdersDto {
+  @ApiPropertyOptional({ description: 'Номер сторінки', default: 1 })
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsNumber()
+  page?: number = 1;
+
+  @ApiPropertyOptional({ description: 'Поле для сортування', default: 'created_at' })
+  @IsOptional()
+  @IsString()
+  orderBy?: string = 'created_at';
+
+  @ApiPropertyOptional({ description: 'Напрямок сортування', enum: ['ASC', 'DESC'], default: 'DESC' })
+  @IsOptional()
+  @IsIn(['ASC', 'DESC'])
+  order?: 'ASC' | 'DESC' = 'DESC';
+
   @ApiPropertyOptional({ description: 'Фільтр по імені' })
   @IsOptional()
   @IsString()
@@ -25,6 +42,7 @@ export class FilterOrdersDto {
 
   @ApiPropertyOptional({ description: 'Фільтр по віку' })
   @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
   @IsNumber()
   age?: number;
 
@@ -43,13 +61,14 @@ export class FilterOrdersDto {
   @IsString()
   course_type?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по статусу' })
+  @ApiPropertyOptional({ description: 'Фільтр по статусу' },)
   @IsOptional()
   @IsString()
   status?: string;
 
   @ApiPropertyOptional({ description: 'Фільтр по сумі' })
   @IsOptional()
+  @Transform(({ value }) => parseFloat(value))
   @IsNumber()
   sum?: number;
 
@@ -59,3 +78,4 @@ export class FilterOrdersDto {
   @Transform(({ value }) => value === 'true')
   onlyMy?: boolean;
 }
+

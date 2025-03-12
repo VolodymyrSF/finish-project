@@ -16,7 +16,7 @@ import { Response } from 'express';
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
-
+/*
   @Get()
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Отримання всіх заявок' })
@@ -69,6 +69,42 @@ export class OrdersController {
     };
   }
 
+  @Get('filter-orders')
+  @UseGuards(JwtAccessGuard)
+  @ApiOperation({ summary: 'Отримати заявки з фільтрацією' })
+  async getFilteredOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity,) {
+    return await this.ordersService.getFilteredOrders(filters, user);
+  }
+
+ */
+
+  @Get('orders')
+  @UseGuards(JwtAccessGuard)
+  @ApiOperation({ summary: 'Отримати заявки з фільтрацією, пагінацією та сортуванням' })
+  async getOrders(
+    @Query() filters: FilterOrdersDto,
+    @CurrentUser() user: UserEntity,
+  ) {
+    const {
+      page = 1,
+      orderBy = 'created_at',
+      order = 'DESC',
+      ...filterParams
+    } = filters;
+
+    if (Object.keys(filterParams).length > 0) {
+      return await this.ordersService.getFilteredOrders({ page, orderBy, order, ...filterParams }, user);
+    }
+
+    const limit = 25;
+    const result = await this.ordersService.getOrders(page, limit, orderBy, order);
+
+    return {
+      ...result,
+      page,
+    };
+  }
+
   @Post(':id/comment')
   @UseGuards(JwtAccessGuard, OrderAccessGuard)
   @ApiOperation({ summary: 'Додавання коментаря до заявки' })
@@ -92,12 +128,7 @@ export class OrdersController {
     return await this.ordersService.updateOrder(id, updateOrderDto, user);
   }
 
-  @Get('filter-orders')
-  @UseGuards(JwtAccessGuard)
-  @ApiOperation({ summary: 'Отримати заявки з фільтрацією' })
-  async getFilteredOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity,) {
-    return await this.ordersService.getFilteredOrders(filters, user);
-  }
+
 
   @Get('export')
   @UseGuards(JwtAccessGuard)

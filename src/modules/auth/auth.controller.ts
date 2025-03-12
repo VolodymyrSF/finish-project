@@ -15,6 +15,7 @@ import { ManagerAuthResDto } from './models/dto/res/manager.auth.res.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /*
   @Post('admin-login')
   @SkipAuth()
   @ApiOperation({ summary: 'Логін адміном' })
@@ -52,6 +53,24 @@ export class AuthController {
     res.redirect('/orders');
     return authManagerData.user;
   }
+   */
+
+  @Post('login')
+  @ApiOperation({ summary: 'Логін (адмін або менеджер)' })
+  public async login(
+    @Body() dto: SignInReqDto,
+    @Res() res: Response,
+  ): Promise<any> {
+    const authData = await this.authService.signIn(dto);
+
+    res.cookie('access_token', authData.tokens.accessToken, {
+      httpOnly: true,
+    });
+    res.setHeader('Authorization', `Bearer ${authData.tokens.accessToken}`);
+
+    return res.status(200).json(authData.tokens);
+  }
+
   @Post('logout')
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Вихід' })
