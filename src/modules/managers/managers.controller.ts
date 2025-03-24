@@ -1,4 +1,16 @@
-import { Controller, Post, Body, UseGuards, Get, Param, Put, Patch, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Param,
+  Put,
+  Patch,
+  Query,
+  BadRequestException,
+  Delete, Req,
+} from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { ManagersService } from './managers.service';
 import { CreateManagerDto } from './dto/create-manager.dto';
@@ -10,55 +22,88 @@ import { AdminGuard } from '../guards/admin.guard';
 export class ManagersController {
   constructor(private readonly managersService: ManagersService) {}
 
-  @Post('create-manager')
+  @Post()
   @UseGuards(JwtAccessGuard, AdminGuard)
-  @ApiOperation({ summary: 'Створення менеджера ' })
+  @ApiOperation({ summary: 'Створення менеджера' })
   async createManager(@Body() dto: CreateManagerDto) {
     return this.managersService.createManager(dto);
   }
 
-  @Get(':id/activate')
+
+  @Get()
   @UseGuards(JwtAccessGuard, AdminGuard)
-  @ApiOperation({ summary: 'Генерація посилання для активації менеджера' })
-  async generateActivationLink(@Param('id') id: string) {
-    return this.managersService.generateActivationLink(id);
+  @ApiOperation({ summary: 'Отримати список менеджерів' })
+  @ApiQuery({ name: 'name', required: false, description: 'Фільтр за ім’ям' })
+  @ApiQuery({ name: 'email', required: false, description: 'Фільтр за email' })
+  @ApiQuery({ name: 'surname', required: false, description: 'Фільтр за прізвищем' })
+  @ApiQuery({ name: 'status', required: false, enum: ['active', 'banned'], description: 'Фільтр за статусом' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Кількість менеджерів на сторінку' })
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Номер сторінки' })
+  async getManagers(@Query() query: { name?: string; email?: string; surname?: string; status?: string; limit?: string; page?: string }) {
+    const { name, email,surname, status } = query;
+    const page = query.page ? Number(query.page) : 1;
+    const limit = query.limit ? Number(query.limit) : 10;
+    return this.managersService.filterManagers(name, email,surname, status, page, limit);
   }
+
+  @Get('me')
+  @UseGuards(JwtAccessGuard)
+  @ApiOperation({ summary: 'Отримати інформацію про поточного менеджера' })
+  async getCurrentManager(@Req() req) {
+    return this.managersService.getManagerById(req.user.id);
+  }
+
+
+  @Put('set-password')
+  @ApiOperation({ summary: 'Встановлення нового пароля' })
+  @UseGuards(JwtAccessGuard, AdminGuard)
+  async setPassword(@Body() dto: UpdatePasswordDto) {
+    console.log('Контролер отримав запит на set-password:', dto);
+    return this.managersService.setPassword(dto);
+  }
+
+  @Post('reset-password')
+  @UseGuards(JwtAccessGuard, AdminGuard)
+  @ApiOperation({ summary: 'Генерація посилання для скидання пароля' })
+  async resetPassword(@Body('email') email: string) {
+    return this.managersService.generatePasswordResetLink(email);
+  }
+
 
   @Get('activate/:token')
   @ApiOperation({ summary: 'Перевірка токена для активації менеджера' })
+  @UseGuards(JwtAccessGuard, AdminGuard)
   async activateManager(@Param('token') token: string) {
     return this.managersService.activateManager(token);
   }
 
   @Get('activate/reset-password/:token')
+  @UseGuards(JwtAccessGuard, AdminGuard)
   @ApiOperation({ summary: 'Перевірка токена для скидання пароля' })
   async validateResetPasswordToken(@Param('token') token: string) {
     return this.managersService.validateResetPasswordToken(token);
   }
 
-  @Post('reset-password')
-  @ApiOperation({ summary: 'Генерація посилання для скидання пароля' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        email: {
-          type: 'string',
-          format: 'email',
-          description: 'Електронна пошта менеджера для скидання пароля',
-        },
-      },
-      required: ['email'],
-    },
-  })
-  async resetPassword(@Body('email') email: string) {
-    return this.managersService.generatePasswordResetLink(email);
+  @Get(':id')
+  @UseGuards(JwtAccessGuard, AdminGuard)
+  @ApiOperation({ summary: 'Отримати інформацію про менеджера за ID' })
+  async getManagerById(@Param('id') id: string) {
+    return this.managersService.getManagerById(id);
   }
 
-  @Put('set-password')
-  @ApiOperation({ summary: 'Встановлення нового пароля' })
-  async setPassword(@Body() dto: UpdatePasswordDto) {
-    return this.managersService.setPassword(dto);
+  @Put(':id')
+  @UseGuards(JwtAccessGuard, AdminGuard)
+  @ApiOperation({ summary: 'Оновити дані менеджера' })
+  async updateManager(@Param('id') id: string, @Body() dto: Partial<CreateManagerDto>) {
+    return this.managersService.updateManager(id, dto);
+  }
+
+
+  @Delete(':id')
+  @UseGuards(JwtAccessGuard, AdminGuard)
+  @ApiOperation({ summary: 'Видалити менеджера' })
+  async deleteManager(@Param('id') id: string) {
+    return this.managersService.deleteManager(id);
   }
 
   @Patch(':id/ban')
@@ -75,30 +120,22 @@ export class ManagersController {
     return this.managersService.changeManagerStatus(id, false);
   }
 
-  @Get('filter')
-  @UseGuards(JwtAccessGuard, AdminGuard)
-  @ApiOperation({ summary: 'Отримати список менеджерів з фільтрацією та пагінацією' })
-  @ApiQuery({ name: 'name', required: false, description: 'Фільтр за ім’ям' })
-  @ApiQuery({ name: 'email', required: false, description: 'Фільтр за email' })
-  @ApiQuery({
-    name: 'status',
-    required: false,
-    description: 'Фільтр за статусом',
-    enum: ['active', 'banned'],
-  })
-  @ApiQuery({ name: 'limit', required: false, description: 'Кількість менеджерів на сторінку', type: Number })
-  @ApiQuery({ name: 'page', required: false, description: 'Номер сторінки', type: Number })
-  async filterManagers(@Query() query: { name?: string; email?: string; status?: string; limit?: string; page?: string }) {
-    const { name, email, status } = query;
-    const page = query.page ? parseInt(query.page, 10) : 1;
-    const limit = query.limit ? parseInt(query.limit, 10) : 10;
-    return this.managersService.filterManagers(name, email, status, page, limit);
-  }
-
   @Get(':id/stats')
   @UseGuards(JwtAccessGuard, AdminGuard)
   @ApiOperation({ summary: 'Отримати статистику менеджера' })
   async getManagerStats(@Param('id') id: string) {
     return this.managersService.getManagerStats(id);
   }
+
+  @Get(':id/activate')
+  @UseGuards(JwtAccessGuard, AdminGuard)
+  @ApiOperation({ summary: 'Генерація посилання для активації менеджера' })
+  async generateActivationLink(@Param('id') id: string) {
+    return this.managersService.generateActivationLink(id);
+  }
+
+
+
+
+
 }

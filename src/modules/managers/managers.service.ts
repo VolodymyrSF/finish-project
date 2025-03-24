@@ -9,15 +9,23 @@ import { ManagerRepository } from '../repository/services/manager.repository';
 import { OrdersRepository } from '../repository/services/orders.repository';
 import { TokenService } from '../auth/services/token.service';
 import { TokenType } from '../../database/entities/enums/token-type.enum';
+import { UserRepository } from '../repository/services/user.repository';
+import { RoleRepository } from '../repository/services/role.repository';
+import { RoleEnum } from '../../database/entities/enums/role.enum';
 
 @Injectable()
 export class ManagersService {
+  private readonly logger = new Logger(ManagersService.name);
+
   constructor(
     @InjectRepository(ManagerEntity)
     private readonly managersRepository: ManagerRepository,
     private readonly ordersRepository: OrdersRepository,
+    private readonly usersRepository: UserRepository,
+    private readonly rolesRepository: RoleRepository,
     private readonly tokenService: TokenService,
   ) {}
+
 
   async createManager(dto: CreateManagerDto) {
     const existingManager = await this.managersRepository.findOne({ where: { email: dto.email } });
@@ -27,9 +35,101 @@ export class ManagersService {
 
     const manager = this.managersRepository.create({ ...dto, isActive: false, isBanned: false });
     await this.managersRepository.save(manager);
-    return manager;
+
+    const role = await this.rolesRepository.findOne({ where: { name: RoleEnum.MANAGER } });
+    if (!role) {
+      throw new NotFoundException('Роль менеджера не знайдена');
+    }
+    const user = this.usersRepository.create({
+      id: manager.id,
+      name: dto.name,
+      email: dto.email,
+      password:'',
+      role: role,
+    });
+    await this.usersRepository.save(user);
+
+    const { password, ...managerWithoutPassword } = manager;
+    return managerWithoutPassword;
   }
 
+
+
+  /** Отримання всіх менеджерів з фільтрацією та пагінацією */
+  async filterManagers(name?: string, email?: string, surname?: string, status?: string, page: number = 1, limit: number = 10) {
+    const where: any = {};
+    if (name) where.name = Like(`%${name}%`);
+    if (email) where.email = Like(`%${email}%`);
+    if(surname) where.surname = Like(`%${surname}%`);
+    if (status === 'active') where.isActive = true;
+    if (status === 'banned') where.isBanned = true;
+
+    const [data, total] = await this.managersRepository.findAndCount({
+      where,
+      select: ['id', 'name', 'surname', 'email', 'phone', 'isActive', 'isBanned', 'created_at', 'updated_at'],
+      order: { created_at: 'DESC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    return { data, total, page, limit };
+  }
+
+  /** Отримання одного менеджера за ID */
+  async getManagerById(managerId: string) {
+    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
+    if (!manager) {
+      throw new NotFoundException('Менеджер не знайдений');
+    }
+    const { password, ...managerWithoutPassword } = manager;
+    return managerWithoutPassword;
+  }
+
+  /** Оновлення даних менеджера */
+  async updateManager(managerId: string, dto: Partial<CreateManagerDto>) {
+    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
+    if (!manager) {
+      throw new NotFoundException('Менеджер не знайдений');
+    }
+
+    Object.assign(manager, dto);
+    await this.managersRepository.save(manager);
+    const { password, ...managerWithoutPassword } = manager;
+    return managerWithoutPassword;
+  }
+
+  /** Видалення менеджера */
+  async deleteManager(managerId: string) {
+    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
+    if (!manager) {
+      throw new NotFoundException('Менеджер не знайдений');
+    }
+    await this.managersRepository.remove(manager);
+    return { message: 'Менеджер успішно видалений' };
+  }
+
+  /** Блокування/розблокування менеджера */
+  async changeManagerStatus(managerId: string, isBanned: boolean) {
+    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
+    if (!manager) {
+      throw new NotFoundException('Менеджер не знайдений');
+    }
+    manager.isBanned = isBanned;
+    manager.isActive = !isBanned;
+    await this.managersRepository.save(manager);
+    return { message: isBanned ? 'Менеджер заблокований' : 'Менеджер розблокований' };
+  }
+
+  /** Отримання статистики менеджера */
+  async getManagerStats(managerId: string) {
+    const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
+    const managerInfo = await this.managersRepository.findOne({ where: { id: managerId } });
+    const totalOrders = orders.length;
+    const { password, ...managerWithoutPassword } = managerInfo;
+    return { Orders:totalOrders, ManagerInfo:managerWithoutPassword };
+  }
+
+  /** Генерація посилання для активації менеджера */
   async generateActivationLink(managerId: string) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
     if (!manager) {
@@ -43,6 +143,7 @@ export class ManagersService {
     return `http://localhost:3000/managers/activate/${token}`;
   }
 
+  /** Активація менеджера */
   async activateManager(token: string) {
     let payload;
     try {
@@ -65,6 +166,7 @@ export class ManagersService {
     return { message: 'Менеджер активований. Встановіть пароль.' };
   }
 
+  /** Генерація посилання для скидання пароля */
   async generatePasswordResetLink(email: string) {
     const manager = await this.managersRepository.findOne({ where: { email } });
     if (!manager) {
@@ -74,7 +176,6 @@ export class ManagersService {
     const token = await this.tokenService.signToken(payload, '30m', TokenType.RESET);
     return `http://localhost:3000/managers/activate/reset-password/${token}`;
   }
-
   async validateResetPasswordToken(token: string) {
     let payload;
     try {
@@ -87,10 +188,10 @@ export class ManagersService {
     }
     return { message: 'Токен дійсний, перейдіть до встановлення нового пароля.', email: payload.email };
   }
-
+  /** Встановлення нового пароля */
   async setPassword(dto: UpdatePasswordDto) {
+    console.log('setPassword викликано, dto:', dto);
     let payload;
-
     try {
       payload = await this.tokenService.verifyToken(dto.token, TokenType.RESET);
     } catch (errorReset) {
@@ -106,8 +207,8 @@ export class ManagersService {
       throw new BadRequestException('Токен не відповідає email');
     }
 
-
-    const manager = await this.managersRepository.findOne({ where: { email: dto.email } });
+/*
+   const manager = await this.managersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
     if (!manager || !manager.isActive) {
       throw new BadRequestException('Менеджер не знайдений або не активований');
     }
@@ -116,41 +217,34 @@ export class ManagersService {
     manager.password = await bcrypt.hash(dto.password, 10);
     await this.managersRepository.save(manager);
 
-    return { message: 'Пароль встановлено. Тепер ви можете увійти.' };
-  }
 
-
-  async changeManagerStatus(managerId: string, isBanned: boolean) {
-    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
+    const user = await this.usersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+    if (!user) {
+      throw new BadRequestException('Менеджер не знайдений або не активований');
     }
-    manager.isBanned = isBanned;
-    manager.isActive = !isBanned;
+    user.password = await bcrypt.hash(dto.password, 10);
+    await this.usersRepository.save(user);
+
+    return { message: 'Пароль встановлено. Тепер ви можете увійти.' };
+
+ */
+    const manager = await this.managersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+    if (!manager || !manager.isActive) {
+      throw new BadRequestException('Менеджер не знайдений або не активований');
+    }
+
+    const user = await this.usersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+    if (!user) {
+      throw new BadRequestException('Менеджер не знайдений або не активований');
+    }
+
+    manager.password = await bcrypt.hash(dto.password, 10);
     await this.managersRepository.save(manager);
-    return { message: isBanned ? 'Менеджер заблокований' : 'Менеджер розблокований' };
-  }
 
-  async filterManagers(name?: string, email?: string, status?: string, page: number = 1, limit: number = 10) {
-    const where: any = {};
-    if (name) where.name = Like(`%${name}%`);
-    if (email) where.email = Like(`%${email}%`);
-    if (status === 'active') where.isActive = true;
-    if (status === 'banned') where.isBanned = true;
+    user.password = await bcrypt.hash(dto.password, 10);
+    await this.usersRepository.save(user);
 
-    const [data, total] = await this.managersRepository.findAndCount({
-      where,
-      order: { created_at: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-    return { data, total, page, limit };
-  }
+    return { message: 'Пароль встановлено. Тепер ви можете увійти.' };
 
-  async getManagerStats(managerId: string) {
-    const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
-    const managerInfo = await this.managersRepository.findOne({ where: { id: managerId } });
-    const totalOrders = orders.length;
-    return { totalOrders, managerInfo };
   }
 }
