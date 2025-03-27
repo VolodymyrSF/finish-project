@@ -2,8 +2,8 @@ import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 export class CreateUpdateModel {
   @CreateDateColumn()
-  created: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updated: Date;
+  updated_at: Date;
 }

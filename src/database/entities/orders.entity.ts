@@ -49,7 +49,7 @@ export class OrderEntity {
   created_at: Date;
 
   @Column({ nullable: true })
-  message: string;
+  msg: string;
 
   @Column({ nullable: true })
   utm: string;

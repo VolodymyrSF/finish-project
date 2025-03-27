@@ -2,7 +2,7 @@ import * as ExcelJS from 'exceljs';
 import { OrderEntity } from '../database/entities/orders.entity';
 import { Response } from 'express';
 
-export async function exportOrdersToExcel(orders:any[], res: Response) {
+export async function exportOrdersToExcel(orders: any[], res: Response) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Orders');
 
@@ -20,7 +20,7 @@ export async function exportOrdersToExcel(orders:any[], res: Response) {
     { header: 'Сума', key: 'sum', width: 15 },
     { header: 'Вже оплачено', key: 'alreadyPaid', width: 15 },
     { header: 'Дата створення', key: 'created_at', width: 20 },
-    { header: 'Повідомлення', key: 'message', width: 30 },
+    { header: 'Повідомлення', key: 'msg', width: 30 },
     { header: 'UTM', key: 'utm', width: 30 },
     { header: 'Коментарі', key: 'comments', width: 30 },
     { header: 'Менеджер', key: 'manager', width: 20 },
@@ -46,7 +46,7 @@ export async function exportOrdersToExcel(orders:any[], res: Response) {
       sum: order.sum !== null ? order.sum : '',
       alreadyPaid: order.alreadyPaid !== null ? order.alreadyPaid : '',
       created_at: order.created_at ? new Date(order.created_at).toLocaleString() : '',
-      message: order.message || '',
+      msg: order.msg || '',
       utm: order.utm || '',
       comments: commentsFormatted,
       manager: order.manager ? order.manager.name : '',

@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { OrdersRepository } from '../repository/services/orders.repository';
 import { UserEntity } from '../../database/entities/user.entity';
 import { Status } from '../../database/entities/enums/order-status.enum';
@@ -12,10 +19,15 @@ import { Equal, FindOptionsWhere, Like } from 'typeorm';
 import { FilterOrdersDto } from './dto/filter-orders.dto';
 import { ManagerResponseDto } from './dto/manager.res.dto';
 import { plainToClass, plainToInstance } from 'class-transformer';
+import { GroupEntity } from '../../database/entities/group.entity';
+import { ManagerEntity } from '../../database/entities/manager.entity';
+import { OrderEntity } from '../../database/entities/orders.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class OrdersService {
   constructor(private readonly ordersRepository: OrdersRepository,
+  @InjectDataSource() private readonly dataSource: DataSource,
   private readonly managersRepository: ManagerRepository,
   private readonly groupRepository: GroupRepository,
 ) {}
@@ -85,7 +97,7 @@ export class OrdersService {
       manager: order.manager.name,
     };
   }
-
+/*
   async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity) {
     const order = await this.ordersRepository.findOne({
       where: { id: id.toString() },
@@ -128,11 +140,66 @@ export class OrdersService {
 
   }
 
+ */
+
+  async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity) {
+    return await this.dataSource.transaction(async (manager) => {
+      const order = await manager.findOne(OrderEntity, {
+        where: { id: id.toString() },
+        relations: ['manager', 'group'],
+      });
+
+      if (!order) {
+        throw new NotFoundException('Заявки не знайдено');
+      }
+
+      if (order.manager && order.manager.id !== user.id) {
+        throw new ForbiddenException('У вас немає прав для цієї заявки');
+      } else {
+        const managerEntity = await manager.findOne(ManagerEntity, { where: { email: user.email } });
+        if (!managerEntity) {
+          throw new NotFoundException('Користувач не є менеджером');
+        }
+        order.manager = managerEntity;
+      }
+
+
+      if (dto.groupName) {
+        let group = await manager.findOne(GroupEntity, { where: { name: dto.groupName } });
+        if (!group) {
+
+          group = manager.create(GroupEntity, {
+            name: dto.groupName,
+            description: dto.GroupDescription ?? 'Створено автоматично',
+          });
+          group = await manager.save(group);
+        } else if (dto.GroupDescription !== undefined) {
+
+          group.description = dto.GroupDescription;
+          group = await manager.save(group);
+        }
+        order.group = group;
+      }
+
+      applyOrderUpdateMapping(order, dto, ['GroupDescription']);
+
+      const updatedOrder = await manager.save(order);
+
+      return {
+        ...updatedOrder,
+        manager: plainToInstance(ManagerResponseDto, updatedOrder.manager, {
+          excludeExtraneousValues: true,
+        }),
+      };
+    });
+  }
+
+
   async getFilteredOrders(filters: FilterOrdersDto, user: UserEntity) {
 
     const where: FindOptionsWhere<any> = {};
 
-    const textFields = ['name', 'surname', 'email', 'phone', 'course', 'course_format', 'course_type'];
+    const textFields = ['name', 'surname', 'email', 'phone', 'course', 'course_format', 'course_type','utm','msg'];
     textFields.forEach(field => {
       if (filters[field]) {
         where[field] = Like(`%${filters[field]}%`);

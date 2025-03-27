@@ -68,6 +68,11 @@ export class UpdateOrderDto {
   @IsString()
   groupName?: string;
 
+  @ApiPropertyOptional({ description: 'Опис групи' })
+  @IsOptional()
+  @IsString()
+  GroupDescription?: string;
+
   @ApiPropertyOptional({ description: 'Сума заявки', type: Number })
   @IsOptional()
   @IsNumber()

@@ -73,6 +73,16 @@ export class FilterOrdersDto {
   @IsString()
   status?: string;
 
+  @ApiPropertyOptional({ description: 'Фільтр по utm' },)
+  @IsOptional()
+  @IsString()
+  utm?: string;
+
+  @ApiPropertyOptional({ description: 'Фільтр по msg' },)
+  @IsOptional()
+  @IsString()
+  msg?: string;
+
   @ApiPropertyOptional({ description: 'Фільтр по сумі' })
   @IsOptional()
   @Transform(({ value }) => parseFloat(value))
