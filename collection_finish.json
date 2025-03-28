@@ -1,0 +1,739 @@
+{
+	"info": {
+		"_postman_id": "f3aa3360-70f8-494d-9995-064b73ae94cc",
+		"name": "Finish Project Updated",
+		"description": "Колекція Postman з основними ендпоінтами (Auth, Managers, Orders) згідно зі Swagger.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31008054"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"mnt1234@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:3000/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/logout",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Edit order (редагувати заявки)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John\",\n  \"surname\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"0987654321\",\n  \"age\": 25,\n  \"course\": \"FE\",\n  \"course_format\": \"online\",\n  \"course_type\": \"pro\",\n  \"status\": \"New\",\n  \"sum\": 1200,\n  \"alreadyPaid\": 400,\n  \"groupName\": \"Група для new\",\n  \"GroupDescription\":\"нова група для клієнтів пакету new\"\n  \n \n}\n"
+						},
+						"url": {
+							"raw": "{{base_url}}/orders/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "400"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add comment to order (додати коментар)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\n{\n  \"comment\": \"New comment from manager\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/orders/:id/comment",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								":id",
+								"comment"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "495"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export orders (експорт заявок у Excel)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/orders/export?orderBy=created_at&order=DESC&msg=first",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								"export"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Vov",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "Doe",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "john.doe@example.com",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "0987654321",
+									"disabled": true
+								},
+								{
+									"key": "age",
+									"value": "25",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FE",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "course_type",
+									"value": "pro",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "In work",
+									"disabled": true
+								},
+								{
+									"key": "sum",
+									"value": "15000",
+									"disabled": true
+								},
+								{
+									"key": "onlyMy",
+									"value": "false",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "orderBy",
+									"value": "created_at"
+								},
+								{
+									"key": "order",
+									"value": "DESC"
+								},
+								{
+									"key": "id",
+									"value": "400",
+									"disabled": true
+								},
+								{
+									"key": "utm",
+									"value": "gad",
+									"disabled": true
+								},
+								{
+									"key": "msg",
+									"value": "first"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get orders(отримання заявок)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/orders?onlyMy=false&page=4&orderBy=created_at&order=DESC",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"orders"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "Vov",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "Doe",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "john.doe@example.com",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "0987654321",
+									"disabled": true
+								},
+								{
+									"key": "age",
+									"value": "25",
+									"disabled": true
+								},
+								{
+									"key": "course",
+									"value": "FE",
+									"disabled": true
+								},
+								{
+									"key": "course_format",
+									"value": "online",
+									"disabled": true
+								},
+								{
+									"key": "course_type",
+									"value": "pro",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "In work",
+									"disabled": true
+								},
+								{
+									"key": "sum",
+									"value": "1200",
+									"disabled": true
+								},
+								{
+									"key": "onlyMy",
+									"value": "false"
+								},
+								{
+									"key": "id",
+									"value": "400",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "4"
+								},
+								{
+									"key": "orderBy",
+									"value": "created_at"
+								},
+								{
+									"key": "order",
+									"value": "DESC"
+								},
+								{
+									"key": "utm",
+									"value": "gad",
+									"disabled": true
+								},
+								{
+									"key": "msg",
+									"value": "first",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Managers",
+			"item": [
+				{
+					"name": "Create Manager",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"newtest1\",\n  \"surname\": \"new1\",\n  \"email\": \"newtst1@example.com\",\n  \"phone\": \"+380971234567\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/managers",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current Manager (/me)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Managers (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers?limit=10&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "тест",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "mnt@example.com",
+									"disabled": true
+								},
+								{
+									"key": "surname",
+									"value": "тестенко",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "active",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manager by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "f74e95c8-009c-4a26-8f26-5a0fdfe9c16d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Manager (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \n  \"surname\": \"new manager11\"\n  \n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/managers/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "f74e95c8-009c-4a26-8f26-5a0fdfe9c16d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Manager",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1833ca26-628c-46bd-91c7-488919401de9"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Ban Manager",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/:id/ban",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id",
+								"ban"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b717eed4-3a0b-4374-9b63-89faaf9df824"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unban Manager",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/:id/unban",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id",
+								"unban"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b717eed4-3a0b-4374-9b63-89faaf9df824"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Manager Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/:id/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id",
+								"stats"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b717eed4-3a0b-4374-9b63-89faaf9df824"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Activation Link",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/:id/activate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								":id",
+								"activate"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "f74e95c8-009c-4a26-8f26-5a0fdfe9c16d"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Activate Manager (via token)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managers/activate/:token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								"activate",
+								":token"
+							],
+							"variable": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYW5hZ2VySWQiOiJmNzRlOTVjOC0wMDljLTRhMjYtOGYyNi01YTBmZGZlOWMxNmQiLCJlbWFpbCI6Im5ld3RzdEBleGFtcGxlLmNvbSIsInR5cGUiOiJhY3RpdmF0ZSIsImlhdCI6MTc0MzE2MDA3NiwiZXhwIjoxNzQzMTYxODc2fQ.7wb-cRSVSLeUNLRc8XYkyjSU_EvQu3Upjwy-YHn4IXw"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Reset Password Token",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/managers/activate/reset-password/:token",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								"activate",
+								"reset-password",
+								":token"
+							],
+							"variable": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5ld3RzdEBleGFtcGxlLmNvbSIsInR5cGUiOiJyZXNldCIsImlhdCI6MTc0MzE2MDQxOCwiZXhwIjoxNzQzMTYyMjE4fQ.pobxNw6f6cpcNIY6oOdlv8QelZKrrKGt5paREoxoU4M"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Reset Password Link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newtst@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/managers/reset-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Set New Password",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newtst@example.com\",\n  \"password\": \"SecurePass1234!\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5ld3RzdEBleGFtcGxlLmNvbSIsInR5cGUiOiJyZXNldCIsImlhdCI6MTc0MzE2MDQxOCwiZXhwIjoxNzQzMTYyMjE4fQ.pobxNw6f6cpcNIY6oOdlv8QelZKrrKGt5paREoxoU4M\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/managers/set-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"managers",
+								"set-password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
