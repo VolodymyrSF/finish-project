@@ -28,34 +28,6 @@ export class ManagersService {
     private readonly tokenService: TokenService,
   ) {}
 
-/*
-  async createManager(dto: CreateManagerDto) {
-    const existingManager = await this.managersRepository.findOne({ where: { email: dto.email } });
-    if (existingManager) {
-      throw new BadRequestException('Менеджер з таким email вже існує');
-    }
-
-    const manager = this.managersRepository.create({ ...dto, isActive: false, isBanned: false });
-    await this.managersRepository.save(manager);
-
-    const role = await this.rolesRepository.findOne({ where: { name: RoleEnum.MANAGER } });
-    if (!role) {
-      throw new NotFoundException('Роль менеджера не знайдена');
-    }
-    const user = this.usersRepository.create({
-      id: manager.id,
-      name: dto.name,
-      email: dto.email,
-      password:'',
-      role: role,
-    });
-    await this.usersRepository.save(user);
-
-    const { password, ...managerWithoutPassword } = manager;
-    return managerWithoutPassword;
-  }
-
- */
 
   async createManager(dto: CreateManagerDto) {
     const existingManager = await this.managersRepository.findOne({ where: { email: dto.email } });
@@ -118,11 +90,15 @@ export class ManagersService {
 
   async getManagerById(managerId: string) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
+    const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
     if (!manager) {
       throw new NotFoundException('Менеджер не знайдений');
     }
+
+    const totalOrders = orders.length;
     const { password, ...managerWithoutPassword } = manager;
-    return managerWithoutPassword;
+    return { Orders:totalOrders, Manager:managerWithoutPassword };
+
   }
 
   async updateManager(managerId: string, dto: Partial<CreateManagerDto>) {
@@ -136,17 +112,7 @@ export class ManagersService {
     const { password, ...managerWithoutPassword } = manager;
     return managerWithoutPassword;
   }
-/*
-  async deleteManager(managerId: string) {
-    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
-    await this.managersRepository.remove(manager);
-    return { message: 'Менеджер успішно видалений' };
-  }
 
- */
   async deleteManager(managerId: string) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
     if (!manager) {
@@ -159,7 +125,7 @@ export class ManagersService {
 
     try {
       await queryRunner.manager.remove(manager);
-      await queryRunner.manager.delete(UserRepository, { id: manager.id }); // Видаляємо юзера, якщо є
+      await queryRunner.manager.delete(this.usersRepository.target, { id: manager.id });
 
       await queryRunner.commitTransaction();
       return { message: 'Менеджер успішно видалений' };
@@ -171,19 +137,7 @@ export class ManagersService {
     }
   }
 
-  /*
-  async changeManagerStatus(managerId: string, isBanned: boolean) {
-    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
-    manager.isBanned = isBanned;
-    manager.isActive = !isBanned;
-    await this.managersRepository.save(manager);
-    return { message: isBanned ? 'Менеджер заблокований' : 'Менеджер розблокований' };
-  }
 
-   */
 
   async changeManagerStatus(managerId: string, isBanned: boolean) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });

@@ -58,7 +58,6 @@ export class ManagersController {
   @ApiOperation({ summary: 'Встановлення нового пароля' })
   @UseGuards(JwtAccessGuard, AdminGuard)
   async setPassword(@Body() dto: UpdatePasswordDto) {
-    console.log('Контролер отримав запит на set-password:', dto);
     return this.managersService.setPassword(dto);
   }
 

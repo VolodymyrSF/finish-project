@@ -97,50 +97,7 @@ export class OrdersService {
       manager: order.manager.name,
     };
   }
-/*
-  async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity) {
-    const order = await this.ordersRepository.findOne({
-      where: { id: id.toString() },
-      relations: ['manager', 'group'],
-    });
-    if (!order) {
-      throw new NotFoundException('Заявки не знайдено');
-    }
-    if (order.manager && order.manager.id !== user.id) {
-      throw new ForbiddenException('У вас немає прав для цієї заявки');
-    }else {
-      const manager = await this.managersRepository.findOne({ where: { email: user.email } });
-      if (!manager) {
-        throw new NotFoundException('Користувач не є менеджером');
-      }
-      order.manager = manager;
-    }
 
-
-
-    if (dto.groupName) {
-      let group = await this.groupRepository.findOne({ where: { name: dto.groupName } });
-      if (!group) {
-        group = this.groupRepository.create({ name: dto.groupName, description: '' });
-        group = await this.groupRepository.save(group);
-      }
-      order.group = group;
-    }
-
-    applyOrderUpdateMapping(order, dto);
-
-    const updatedOrder = await this.ordersRepository.save(order);
-
-    return {
-      ...updatedOrder,
-      manager: plainToInstance(ManagerResponseDto, updatedOrder.manager, {
-        excludeExtraneousValues: true,
-      }),
-    };
-
-  }
-
- */
 
   async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity) {
     return await this.dataSource.transaction(async (manager) => {
