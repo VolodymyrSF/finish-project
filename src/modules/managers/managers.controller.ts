@@ -55,7 +55,7 @@ export class ManagersController {
 
 
   @Put('set-password')
-  @ApiOperation({ summary: 'Встановлення нового пароля' })
+  @ApiOperation({ summary: 'Активація менеджера Або скидання паролю' })
   @UseGuards(JwtAccessGuard, AdminGuard)
   async setPassword(@Body() dto: UpdatePasswordDto) {
     return this.managersService.setPassword(dto);
@@ -68,7 +68,7 @@ export class ManagersController {
     return this.managersService.generatePasswordResetLink(email);
   }
 
-
+/*
   @Get('activate/:token')
   @ApiOperation({ summary: 'Перевірка токена для активації менеджера' })
   @UseGuards(JwtAccessGuard, AdminGuard)
@@ -76,12 +76,16 @@ export class ManagersController {
     return this.managersService.activateManager(token);
   }
 
+
+
   @Get('activate/reset-password/:token')
   @UseGuards(JwtAccessGuard, AdminGuard)
   @ApiOperation({ summary: 'Перевірка токена для скидання пароля' })
   async validateResetPasswordToken(@Param('token') token: string) {
     return this.managersService.validateResetPasswordToken(token);
   }
+
+ */
 
   @Get(':id')
   @UseGuards(JwtAccessGuard, AdminGuard)

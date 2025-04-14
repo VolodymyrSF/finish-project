@@ -110,14 +110,21 @@ export class OrdersService {
         throw new NotFoundException('Заявки не знайдено');
       }
 
-      if (order.manager && order.manager.id !== user.id) {
-        throw new ForbiddenException('У вас немає прав для цієї заявки');
+      if (dto.status === Status.New) {
+        order.status = Status.New;
+        order.manager = null;
       } else {
-        const managerEntity = await manager.findOne(ManagerEntity, { where: { email: user.email } });
-        if (!managerEntity) {
-          throw new NotFoundException('Користувач не є менеджером');
+        if (order.manager && order.manager.id !== user.id) {
+          throw new ForbiddenException('У вас немає прав для цієї заявки');
         }
-        order.manager = managerEntity;
+
+        if (!order.manager) {
+          const managerEntity = await manager.findOne(ManagerEntity, { where: { email: user.email } });
+          if (!managerEntity) {
+            throw new NotFoundException('Користувач не є менеджером');
+          }
+          order.manager = managerEntity;
+        }
       }
 
 

@@ -166,11 +166,25 @@ export class ManagersService {
 
 
   async getManagerStats(managerId: string) {
-    const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
+
+    const allStatuses = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select('order.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('order.manager_id = :managerId', { managerId })
+      .groupBy('order.status')
+      .getRawMany();
+
+    const stats = {};
+    allStatuses.forEach(row => {
+      stats[row.status] = Number(row.count);
+    });
+
+    //const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
     const managerInfo = await this.managersRepository.findOne({ where: { id: managerId } });
-    const totalOrders = orders.length;
+    //const totalOrders = orders.length;
     const { password, ...managerWithoutPassword } = managerInfo;
-    return { Orders:totalOrders, ManagerInfo:managerWithoutPassword };
+    return { Orders:stats, ManagerInfo:managerWithoutPassword };
   }
 
   async generateActivationLink(managerId: string) {
@@ -186,27 +200,7 @@ export class ManagersService {
     return `http://localhost:3000/managers/activate/${token}`;
   }
 
-  async activateManager(token: string) {
-    let payload;
-    try {
-      payload = await this.tokenService.verifyToken(token, TokenType.ACTIVATE);
-    } catch (error) {
-      throw new BadRequestException('Недійсний або прострочений токен');
-    }
-    if (payload.type !== TokenType.ACTIVATE) {
-      throw new BadRequestException('Невірний тип токена');
-    }
-    const manager = await this.managersRepository.findOne({ where: { id: payload.managerId } });
-    if (!manager) {
-      throw new BadRequestException('Менеджер не знайдений');
-    }
-    if (manager.isActive) {
-      throw new BadRequestException('Менеджер вже активований');
-    }
-    manager.isActive = true;
-    await this.managersRepository.save(manager);
-    return { message: 'Менеджер активований. Встановіть пароль.' };
-  }
+
 
   async generatePasswordResetLink(email: string) {
     const manager = await this.managersRepository.findOne({ where: { email } });
@@ -217,19 +211,59 @@ export class ManagersService {
     const token = await this.tokenService.signToken(payload, '30m', TokenType.RESET);
     return `http://localhost:3000/managers/activate/reset-password/${token}`;
   }
-  async validateResetPasswordToken(token: string) {
+
+
+  async setPassword(dto: UpdatePasswordDto) {
     let payload;
+    let isActivation = false;
+
     try {
-      payload = await this.tokenService.verifyToken(token, TokenType.RESET);
-    } catch (error) {
-      throw new BadRequestException('Недійсний або прострочений токен');
+      payload = await this.tokenService.verifyToken(dto.token, TokenType.RESET);
+    } catch (errorReset) {
+      try {
+        payload = await this.tokenService.verifyToken(dto.token, TokenType.ACTIVATE);
+        isActivation = true;
+      } catch (errorActivate) {
+        throw new BadRequestException('Недійсний або прострочений токен');
+      }
     }
-    if (payload.type !== TokenType.RESET) {
-      throw new BadRequestException('Невірний тип токена');
+
+    if (payload.email !== dto.email) {
+      throw new BadRequestException('Токен не відповідає email');
     }
-    return { message: 'Токен дійсний, перейдіть до встановлення нового пароля.', email: payload.email };
+
+    const manager = await this.managersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+    if (!manager || (!manager.isActive && !isActivation)) {
+      throw new BadRequestException('Менеджер не знайдений або не активований');
+    }
+
+    const user = await this.usersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+    if (!user) {
+      throw new BadRequestException('Менеджер не знайдений або не активований');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+    manager.password = hashedPassword;
+    user.password = hashedPassword;
+
+    if (isActivation) {
+      manager.isActive = true;
+    }
+
+    await this.managersRepository.save(manager);
+    await this.usersRepository.save(user);
+
+    return {
+      message: isActivation
+        ? 'Менеджер активований і пароль встановлено. Тепер можна входити.'
+        : 'Пароль успішно скинуто. Тепер можна входити.',
+    };
   }
 
+
+
+
+  /*
   async setPassword(dto: UpdatePasswordDto) {
     console.log('setPassword викликано, dto:', dto);
     let payload;
@@ -267,4 +301,6 @@ export class ManagersService {
     return { message: 'Пароль встановлено. Тепер ви можете увійти.' };
 
   }
+
+   */
 }

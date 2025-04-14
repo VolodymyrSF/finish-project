@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { IsStrictEmail } from '../../../helpers/email-validator.helper';
 
 export class CreateManagerDto {
   @ApiProperty({ description: "Ім'я менеджера", example: 'Олександр' })
@@ -14,7 +15,8 @@ export class CreateManagerDto {
 
   @ApiProperty({ description: 'Email менеджера', example: 'alex@example.com' })
   @IsNotEmpty()
-  @IsEmail()
+  @IsString()
+  @IsStrictEmail()
   email: string;
 
   @ApiProperty({ description: 'Телефон менеджера', example: '+380971234567', required: false })
