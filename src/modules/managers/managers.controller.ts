@@ -17,6 +17,7 @@ import { CreateManagerDto } from './dto/create-manager.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { JwtAccessGuard } from '../guards/jwt-access.guard';
 import { AdminGuard } from '../guards/admin.guard';
+import { RoleEnum } from '../../database/entities/enums/role.enum';
 
 @Controller('managers')
 export class ManagersController {
@@ -50,6 +51,9 @@ export class ManagersController {
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Отримати інформацію про поточного менеджера' })
   async getCurrentManager(@Req() req) {
+    if (req.user.role.name !== RoleEnum.MANAGER) {
+      throw new BadRequestException('Цей маршрут доступний тільки для менеджерів');
+    }
     return this.managersService.getManagerById(req.user.id);
   }
 

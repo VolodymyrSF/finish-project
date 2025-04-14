@@ -94,10 +94,9 @@ export class ManagersService {
     if (!manager) {
       throw new NotFoundException('Менеджер не знайдений');
     }
-
-    const totalOrders = orders.length;
+    const stats = await this.getManagerOrderStats(managerId);
     const { password, ...managerWithoutPassword } = manager;
-    return { Orders:totalOrders, Manager:managerWithoutPassword };
+    return { Orders: stats, ManagerInfo: managerWithoutPassword };
 
   }
 
@@ -166,25 +165,13 @@ export class ManagersService {
 
 
   async getManagerStats(managerId: string) {
-
-    const allStatuses = await this.ordersRepository
-      .createQueryBuilder('order')
-      .select('order.status', 'status')
-      .addSelect('COUNT(*)', 'count')
-      .where('order.manager_id = :managerId', { managerId })
-      .groupBy('order.status')
-      .getRawMany();
-
-    const stats = {};
-    allStatuses.forEach(row => {
-      stats[row.status] = Number(row.count);
-    });
-
-    //const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
-    const managerInfo = await this.managersRepository.findOne({ where: { id: managerId } });
-    //const totalOrders = orders.length;
-    const { password, ...managerWithoutPassword } = managerInfo;
-    return { Orders:stats, ManagerInfo:managerWithoutPassword };
+    const stats = await this.getManagerOrderStats(managerId);
+    const manager = await this.managersRepository.findOne({ where: { id: managerId } });
+    if (!manager) {
+      throw new NotFoundException('Менеджер не знайдений');
+    }
+    const { password, ...managerWithoutPassword } = manager;
+    return { Orders: stats, ManagerInfo: managerWithoutPassword };
   }
 
   async generateActivationLink(managerId: string) {
@@ -258,7 +245,27 @@ export class ManagersService {
         ? 'Менеджер активований і пароль встановлено. Тепер можна входити.'
         : 'Пароль успішно скинуто. Тепер можна входити.',
     };
+
+
   }
+
+  private async getManagerOrderStats(managerId: string): Promise<Record<string, number>> {
+    const allStatuses = await this.ordersRepository
+      .createQueryBuilder('order')
+      .select('order.status', 'status')
+      .addSelect('COUNT(*)', 'count')
+      .where('order.manager_id = :managerId', { managerId })
+      .groupBy('order.status')
+      .getRawMany();
+
+    const stats: Record<string, number> = {};
+    allStatuses.forEach(row => {
+      stats[row.status] = Number(row.count);
+    });
+
+    return stats;
+  }
+
 
 
 
