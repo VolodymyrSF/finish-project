@@ -53,12 +53,9 @@ export class AuthService {
         'updated_at',
       ],
     });
-    console.log('Отриманий менеджер:', manager);
 
     if (manager) {
-      console.log('Manager before password validation:', manager);
       await this.validatePasswordOrThrow(dto.password, manager.password);
-      console.log('Manager details:', { isActive: manager.isActive, isBanned: manager.isBanned });
       assertManagerLoginAllowed(manager);
 
       const tokens = await this.generateAndStoreTokens(manager.id, RoleEnum.MANAGER, false);
