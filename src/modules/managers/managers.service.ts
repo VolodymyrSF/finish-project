@@ -14,6 +14,10 @@ import { RoleRepository } from '../repository/services/role.repository';
 import { RoleEnum } from '../../database/entities/enums/role.enum';
 import { RoleEntity } from '../../database/entities/role.entity';
 
+import { runInTransaction } from '../../utils/run-in-transaction';
+import { stripPassword } from '../../utils/strip-password';
+import { getManagerOrderStats } from '../../utils/get-manager-order-stats';
+
 @Injectable()
 export class ManagersService {
   private readonly logger = new Logger(ManagersService.name);
@@ -35,38 +39,25 @@ export class ManagersService {
       throw new BadRequestException('Менеджер з таким email вже існує');
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return runInTransaction(this.dataSource, async (manager) => {
+      const newManager = this.managersRepository.create({ ...dto, isActive: false, isBanned: false });
+      await manager.save(newManager);
 
-    try {
-      const manager = this.managersRepository.create({ ...dto, isActive: false, isBanned: false });
-      await queryRunner.manager.save(manager);
-
-      const role = await queryRunner.manager.findOne(RoleEntity, { where: { name: RoleEnum.MANAGER } });
-      if (!role) {
-        throw new NotFoundException('Роль менеджера не знайдена');
-      }
+      const role = await manager.findOne(RoleEntity, { where: { name: RoleEnum.MANAGER } });
+      if (!role) throw new NotFoundException('Роль менеджера не знайдена');
 
       const user = this.usersRepository.create({
-        id: manager.id,
+        id: newManager.id,
         name: dto.name,
         email: dto.email,
         password: '',
-        role: role,
+        role,
       });
-      await queryRunner.manager.save(user);
 
-      await queryRunner.commitTransaction();
+      await manager.save(user);
 
-      const { password, ...managerWithoutPassword } = manager;
-      return managerWithoutPassword;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+      return stripPassword(newManager);
+    });
   }
 
   async filterManagers(name?: string, email?: string, surname?: string, status?: string, page: number = 1, limit: number = 10) {
@@ -90,88 +81,64 @@ export class ManagersService {
 
   async getManagerById(managerId: string) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    const orders = await this.ordersRepository.find({ where: { manager: { id: managerId } } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
-    const stats = await this.getManagerOrderStats(managerId);
-    const { password, ...managerWithoutPassword } = manager;
-    return { Orders: stats, ManagerInfo: managerWithoutPassword };
+    if (!manager) throw new NotFoundException('Менеджер не знайдений');
 
+    const stats = await getManagerOrderStats(this.ordersRepository, managerId);
+
+    return {
+      orderStats: stats,
+      manager: stripPassword(manager),
+    };
   }
 
   async updateManager(managerId: string, dto: Partial<CreateManagerDto>) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
+    if (!manager) throw new NotFoundException('Менеджер не знайдений');
 
     Object.assign(manager, dto);
     await this.managersRepository.save(manager);
-    const { password, ...managerWithoutPassword } = manager;
-    return managerWithoutPassword;
+
+    return stripPassword(manager);
   }
 
   async deleteManager(managerId: string) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
+    if (!manager) throw new NotFoundException('Менеджер не знайдений');
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return runInTransaction(this.dataSource, async (runner) => {
+      await runner.remove(manager);
+      await runner.delete(this.usersRepository.target, { id: manager.id });
 
-    try {
-      await queryRunner.manager.remove(manager);
-      await queryRunner.manager.delete(this.usersRepository.target, { id: manager.id });
-
-      await queryRunner.commitTransaction();
       return { message: 'Менеджер успішно видалений' };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
 
 
   async changeManagerStatus(managerId: string, isBanned: boolean) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
+    if (!manager) throw new NotFoundException('Менеджер не знайдений');
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
+    return runInTransaction(this.dataSource, async (runner) => {
       manager.isBanned = isBanned;
       manager.isActive = !isBanned;
-      await queryRunner.manager.save(manager);
+      await runner.save(manager);
 
-      await queryRunner.commitTransaction();
       return { message: isBanned ? 'Менеджер заблокований' : 'Менеджер розблокований' };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
 
   async getManagerStats(managerId: string) {
-    const stats = await this.getManagerOrderStats(managerId);
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
-    if (!manager) {
-      throw new NotFoundException('Менеджер не знайдений');
-    }
-    const { password, ...managerWithoutPassword } = manager;
-    return { Orders: stats, ManagerInfo: managerWithoutPassword };
+    if (!manager) throw new NotFoundException('Менеджер не знайдений');
+
+    const stats = await getManagerOrderStats(this.ordersRepository, managerId);
+
+    return {
+      orderStats: stats,
+      manager: stripPassword(manager),
+    };
   }
 
   async generateActivationLink(managerId: string) {

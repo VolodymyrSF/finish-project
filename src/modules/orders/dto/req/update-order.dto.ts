@@ -1,9 +1,9 @@
 import { IsOptional, IsString, IsIn, IsNumber } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Course } from '../../../database/entities/enums/course.enum';
-import { CourseType } from '../../../database/entities/enums/course-type.enum';
-import { CourseFormat } from '../../../database/entities/enums/course-format.enum';
-import { UpdateStatus } from '../../../database/entities/enums/update-status.enum';
+import { Course } from '../../../../database/entities/enums/course.enum';
+import { CourseType } from '../../../../database/entities/enums/course-type.enum';
+import { CourseFormat } from '../../../../database/entities/enums/course-format.enum';
+import { UpdateStatus } from '../../../../database/entities/enums/update-status.enum';
 
 
 export class UpdateOrderDto {

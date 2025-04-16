@@ -1,4 +1,4 @@
-import { UpdateOrderDto } from '../modules/orders/dto/update-order.dto';
+import { UpdateOrderDto } from '../modules/orders/dto/req/update-order.dto';
 import { OrderEntity } from '../database/entities/orders.entity';
 
 export function applyOrderUpdateMapping(

@@ -15,6 +15,8 @@ import { RoleEnum } from '../../../database/entities/enums/role.enum';
 import { ManagerAuthResDto } from '../models/dto/res/manager.auth.res.dto';
 import { ManagerSignInReqDto } from '../models/dto/req/manager.sign-in.req.dto';
 import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
+import { assertManagerLoginAllowed } from '../../../helpers/assertManagerLoginAllowed';
+import { UserResDto } from '../../user/models/dto/res/user.res.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,131 +30,13 @@ export class AuthService {
     private readonly jwtService: JwtService,
 
   ) {}
-/*
-  public async signIn(dto: SignInReqDto): Promise<AuthResDto> {
+
+  public async signIn(dto: SignInReqDto): Promise<{ user: UserResDto | ManagerAuthResDto; tokens: TokenPairResDto }> {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
-      relations: ['role', 'refreshTokens'],
-      select: ['id', 'password', 'role', 'name'],
+      relations: ['role'],
+      select: ['id', 'password', 'name'],
     });
-
-    if (!user) {
-      throw new UnauthorizedException('Користувача не знайдено');
-    }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Неправильний пароль');
-    }
-
-
-
-    const tokens = await this.tokenService.generateAuthTokens({
-      userId: user.id,
-      roleId: user.role.id,
-    });
-
-    await Promise.all([
-      this.authCacheService.saveToken(
-        tokens.accessToken,
-        user.id,
-      ),
-      this.refreshTokenRepository.save(
-        this.refreshTokenRepository.create({
-          user_id: user.id,
-          refreshToken: tokens.refreshToken,
-        }),
-      ),
-    ]);
-
-    return { user: UserMapper.toResDto(user), tokens };
-  }
-
-  private async isEmailNotExistOrThrow(email: string) {
-    const user = await this.userRepository.findOneBy({ email });
-    if (user) {
-      throw new Error('Користувач з таким email вже існує');
-    }
-  }
-
-
-  public async managerSignIn(dto: ManagerSignInReqDto): Promise<{ user: ManagerAuthResDto, tokens: TokenPairResDto }> {
-
-    const manager = await this.managersRepository.findOne({
-      where: { email: dto.email },
-      select: ['id', 'password', 'name', 'surname', 'email', 'phone', 'isActive', 'isBanned', 'created_at', 'updated_at'],
-    });
-
-
-    if (!manager) {
-      throw new UnauthorizedException('Менеджера не знайдено');
-    }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, manager.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Неправильний пароль');
-    }
-
-    const isBanned = manager.isBanned;
-    if (isBanned) {
-      throw new UnauthorizedException('Вас забанив адміністратор');
-    }
-
-
-
-
-    const tokens = await this.tokenService.generateAuthTokens({
-      userId: manager.id,
-      roleId: RoleEnum.MANAGER,
-    });
-
-    await Promise.all([
-      this.authCacheService.saveToken(tokens.accessToken, manager.id),
-      this.refreshTokenRepository.save(
-        this.refreshTokenRepository.create({
-          manager_id: manager.id,
-          user_id: null,
-          refreshToken: tokens.refreshToken,
-        }),
-      ),
-    ]);
-
-
-
-    return { user: UserMapper.toManagerAuthResDto(manager), tokens };
-  }
-*/
-
-  public async signIn(dto: SignInReqDto): Promise<{ user: any; tokens: TokenPairResDto }> {
-    const user = await this.userRepository.findOne({
-      where: { email: dto.email },
-      relations: ['role', 'refreshTokens'],
-      select: ['id', 'password', 'role', 'name'],
-    });
-
-    if (user) {
-      const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Невірні дані для входу');
-      }
-
-      const tokens = await this.tokenService.generateAuthTokens({
-        userId: user.id,
-        roleId: user.role.id,
-      });
-
-      await Promise.all([
-        this.authCacheService.saveToken(tokens.accessToken, user.id),
-        this.refreshTokenRepository.save(
-          this.refreshTokenRepository.create({
-            user_id: user.id,
-            refreshToken: tokens.refreshToken,
-          }),
-        ),
-      ]);
-
-      return { user: UserMapper.toResDto(user), tokens };
-    }
 
     const manager = await this.managersRepository.findOne({
       where: { email: dto.email },
@@ -169,33 +53,69 @@ export class AuthService {
         'updated_at',
       ],
     });
+    console.log('Отриманий менеджер:', manager);
 
     if (manager) {
-      const isPasswordValid = await bcrypt.compare(dto.password, manager.password);
-      if (!isPasswordValid || manager.isBanned) {
-        throw new UnauthorizedException('Невірні дані для входу');
-      }
+      console.log('Manager before password validation:', manager);
+      await this.validatePasswordOrThrow(dto.password, manager.password);
+      console.log('Manager details:', { isActive: manager.isActive, isBanned: manager.isBanned });
+      assertManagerLoginAllowed(manager);
 
-      const tokens = await this.tokenService.generateAuthTokens({
-        userId: manager.id,
-        roleId: RoleEnum.MANAGER,
-      });
+      const tokens = await this.generateAndStoreTokens(manager.id, RoleEnum.MANAGER, false);
 
-      await Promise.all([
-        this.authCacheService.saveToken(tokens.accessToken, manager.id),
-        this.refreshTokenRepository.save(
-          this.refreshTokenRepository.create({
-            manager_id: manager.id,
-            user_id: null,
-            refreshToken: tokens.refreshToken,
-          }),
-        ),
-      ]);
+      return {
+        user: UserMapper.toManagerAuthResDto(manager),
+        tokens,
+      };
+    }else if (user) {
+      await this.validatePasswordOrThrow(dto.password, user.password);
 
-      return { user: UserMapper.toManagerAuthResDto(manager), tokens };
+      const tokens = await this.generateAndStoreTokens(user.id, user.role.id, true);
+
+      return {
+        user: UserMapper.toResDto(user),
+        tokens,
+      };
     }
 
     throw new UnauthorizedException('Невірні дані для входу');
+  }
+
+
+
+
+
+
+
+  private async validatePasswordOrThrow(raw: string, hashed: string): Promise<void> {
+    const isValid = await bcrypt.compare(raw, hashed);
+    if (!isValid) {
+      throw new UnauthorizedException('Невірні дані для входу');
+    }
+  }
+
+  private async generateAndStoreTokens(
+    id: string,
+    roleId: RoleEnum | string,
+    isUser: boolean,
+  ): Promise<TokenPairResDto> {
+    const tokens = await this.tokenService.generateAuthTokens({
+      userId: id,
+      roleId,
+    });
+
+    await Promise.all([
+      this.authCacheService.saveToken(tokens.accessToken, id),
+      this.refreshTokenRepository.save(
+        this.refreshTokenRepository.create({
+          user_id: isUser ? id : null,
+          manager_id: isUser ? null : id,
+          refreshToken: tokens.refreshToken,
+        }),
+      ),
+    ]);
+
+    return tokens;
   }
 
   public async logout(userId: string, accessToken: string): Promise<void> {
@@ -207,6 +127,8 @@ export class AuthService {
     await Promise.all([
       this.authCacheService.deleteToken(userId),
       this.refreshTokenRepository.delete({ user_id: userId }),
+      this.refreshTokenRepository.delete({ manager_id: userId }),
     ]);
+
   }
 }

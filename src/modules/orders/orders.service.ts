@@ -1,6 +1,4 @@
 import {
-  BadRequestException,
-  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -10,19 +8,20 @@ import { OrdersRepository } from '../repository/services/orders.repository';
 import { UserEntity } from '../../database/entities/user.entity';
 import { Status } from '../../database/entities/enums/order-status.enum';
 import { ManagerRepository } from '../repository/services/manager.repository';
-import { BaseCommentDto } from './dto/base-comment.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { BaseCommentDto } from './dto/res/base-comment.dto';
+import { UpdateOrderDto } from './dto/req/update-order.dto';
 import { applyOrderUpdateMapping } from '../../helpers/order-update.mapper';
 import { GroupRepository } from '../repository/services/group.repository';
-import { UpdateStatus } from '../../database/entities/enums/update-status.enum';
-import { Equal, FindOptionsWhere, Like } from 'typeorm';
-import { FilterOrdersDto } from './dto/filter-orders.dto';
-import { ManagerResponseDto } from './dto/manager.res.dto';
-import { plainToClass, plainToInstance } from 'class-transformer';
-import { GroupEntity } from '../../database/entities/group.entity';
+import { FilterOrdersDto } from './dto/req/filter-orders.dto';
 import { ManagerEntity } from '../../database/entities/manager.entity';
 import { OrderEntity } from '../../database/entities/orders.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { handleGroup } from '../../helpers/handleGroup';
+import { assignManagerIfMissing } from '../../helpers/assignManagerIfMissing';
+import { runInTransaction } from '../../utils/run-in-transaction';
+import { buildOrderFilterObject } from '../../helpers/buildOrderFilterObject';
+import { mapOrderToResponse } from '../../helpers/order.mapper';9
+import { OrderResponseDto } from './dto/res/order.response.dto';
 
 @Injectable()
 export class OrdersService {
@@ -37,7 +36,7 @@ export class OrdersService {
     limit: number,
     orderBy: string,
     order: 'ASC' | 'DESC',
-  ) {
+  ): Promise<{ orders: OrderResponseDto[]; total: number; totalPages: number }> {
     const [orders, total] = await this.ordersRepository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
@@ -45,70 +44,57 @@ export class OrdersService {
       relations: ['manager', 'group'],
     });
 
-    const transformedOrders = orders.map(order => ({
-      ...order,
-      manager: order.manager ? order.manager.name : null,
-      group: order.group ? order.group.name : null,
-    }));
-
-    const totalPages = Math.ceil(total / limit);
-
-    return { orders: transformedOrders, total, totalPages };
+    const transformed = orders.map(mapOrderToResponse);
+    return {
+      orders: transformed,
+      total,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async addCommentToOrder(
     orderId: number,
     comment: string,
     user: UserEntity,
-  ):  Promise<{ comment: BaseCommentDto; status: Status; manager: string }> {
-    const order = await this.ordersRepository.findOne({ where: { id: orderId.toString() } });
-    if (!order) {
-      throw new NotFoundException('Заявки не знайдено');
-    }
+  ): Promise<{ comment: BaseCommentDto; status: Status; manager: string }> {
+    const order = await this.ordersRepository.findOne({
+      where: { id: orderId.toString() },
+      relations: ['manager'],
+    });
+
+    if (!order) throw new NotFoundException('Заявки не знайдено');
 
     if (order.status === null || order.status === Status.New) {
       order.status = Status.InWork;
     }
 
-    if (!order.manager) {
-      const manager = await this.managersRepository.findOne({ where: { email: user.email } });
-      if (!manager) {
-        throw new NotFoundException('Користувач не є менеджером');
-      }
-      order.manager = manager;
-    }
+    await assignManagerIfMissing(order, user, this.managersRepository);
 
-    if (!order.comments) {
-      order.comments = [];
-    }
-    const newComment = {
+    order.comments ??= [];
+    const newComment: BaseCommentDto = {
       text: comment,
       author: user.name,
       createdAt: new Date(),
     };
 
     order.comments.push(newComment);
-
     await this.ordersRepository.save(order);
 
     return {
-      comment: newComment as BaseCommentDto,
+      comment: newComment,
       status: order.status,
       manager: order.manager.name,
     };
   }
 
-
-  async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity) {
-    return await this.dataSource.transaction(async (manager) => {
+  async updateOrder(id: number, dto: UpdateOrderDto, user: UserEntity): Promise<OrderResponseDto> {
+    return runInTransaction(this.dataSource, async (manager) => {
       const order = await manager.findOne(OrderEntity, {
         where: { id: id.toString() },
         relations: ['manager', 'group'],
       });
 
-      if (!order) {
-        throw new NotFoundException('Заявки не знайдено');
-      }
+      if (!order) throw new NotFoundException('Заявки не знайдено');
 
       if (dto.status === Status.New) {
         order.status = Status.New;
@@ -119,7 +105,9 @@ export class OrdersService {
         }
 
         if (!order.manager) {
-          const managerEntity = await manager.findOne(ManagerEntity, { where: { email: user.email } });
+          const managerEntity = await manager.findOne(ManagerEntity, {
+            where: { email: user.email },
+          });
           if (!managerEntity) {
             throw new NotFoundException('Користувач не є менеджером');
           }
@@ -127,87 +115,29 @@ export class OrdersService {
         }
       }
 
-
       if (dto.groupName) {
-        let group = await manager.findOne(GroupEntity, { where: { name: dto.groupName } });
-        if (!group) {
-
-          group = manager.create(GroupEntity, {
-            name: dto.groupName,
-            description: dto.GroupDescription ?? 'Створено автоматично',
-          });
-          group = await manager.save(group);
-        } else if (dto.GroupDescription !== undefined) {
-
-          group.description = dto.GroupDescription;
-          group = await manager.save(group);
-        }
+        const group = await handleGroup(dto, manager);
         order.group = group;
       }
 
       applyOrderUpdateMapping(order, dto, ['GroupDescription']);
-
       const updatedOrder = await manager.save(order);
 
-      return {
-        ...updatedOrder,
-        manager: plainToInstance(ManagerResponseDto, updatedOrder.manager, {
-          excludeExtraneousValues: true,
-        }),
-      };
+      return mapOrderToResponse(updatedOrder);
     });
   }
 
-
-  async getFilteredOrders(filters: FilterOrdersDto, user: UserEntity) {
-
-    const where: FindOptionsWhere<any> = {};
-
-    const textFields = ['name', 'surname', 'email', 'phone', 'course', 'course_format', 'course_type','utm','msg'];
-    textFields.forEach(field => {
-      if (filters[field]) {
-        where[field] = Like(`%${filters[field]}%`);
-      }
-    });
-
-    const numberFields = ['age', 'sum', 'id'];
-    numberFields.forEach(field => {
-      if (filters[field] !== undefined) {
-        where[field] = filters[field];
-      }
-    });
-
-    if (filters.status) {
-      if (!Object.values(UpdateStatus).includes(filters.status as UpdateStatus)) {
-        throw new BadRequestException(`Invalid status: ${filters.status}. Allowed values: ${Object.values(UpdateStatus).join(', ')}`);
-      }
-      where.status = Equal(filters.status as Status | null);
-
-    }
-
-    if (filters.onlyMy) {
-      where.manager = { id: user.id };
-    }
+  async getFilteredOrders(
+    filters: FilterOrdersDto,
+    user: UserEntity,
+  ): Promise<OrderResponseDto[]> {
+    const where = buildOrderFilterObject(filters, user);
 
     const orders = await this.ordersRepository.find({
       where,
       relations: ['manager', 'group'],
     });
-    return orders.map(order => ({
-      ...order,
-      manager: order.manager ? {
-        id: order.manager.id,
-        name: order.manager.name,
-        surname: order.manager.surname,
-        email: order.manager.email,
-        phone: order.manager.phone,
-      } : null,
-      group: order.group ? {
-        id: order.group.id,
-        name: order.group.name,
-      } : null,
-    }));
-    //return orders;
-  }
 
+    return orders.map(mapOrderToResponse);
+  }
 }

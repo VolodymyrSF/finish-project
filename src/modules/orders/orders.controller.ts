@@ -5,11 +5,11 @@ import { OrderAccessGuard } from '../guards/order-access.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserEntity } from '../../database/entities/user.entity';
 import { JwtAccessGuard } from '../guards/jwt-access.guard';
-import { AddCommentDto } from './dto/add-comment.dto';
-import { BaseCommentDto } from './dto/base-comment.dto';
+import { AddCommentDto } from './dto/req/add-comment.dto';
+import { BaseCommentDto } from './dto/res/base-comment.dto';
 import { Status } from '../../database/entities/enums/order-status.enum';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import { FilterOrdersDto } from './dto/filter-orders.dto';
+import { UpdateOrderDto } from './dto/req/update-order.dto';
+import { FilterOrdersDto } from './dto/req/filter-orders.dto';
 import { exportOrdersToExcel } from '../../helpers/excel-export.helper';
 import { Response } from 'express';
 
