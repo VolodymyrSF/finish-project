@@ -17,6 +17,8 @@ import { ManagerSignInReqDto } from '../models/dto/req/manager.sign-in.req.dto';
 import { TokenPairResDto } from '../models/dto/res/token-pair.res.dto';
 import { assertManagerLoginAllowed } from '../../../helpers/assertManagerLoginAllowed';
 import { UserResDto } from '../../user/models/dto/res/user.res.dto';
+import { RefreshTokenReqDto } from '../models/dto/req/refresh-token.req.dto';
+import { TokenType } from '../../../database/entities/enums/token-type.enum';
 
 @Injectable()
 export class AuthService {
@@ -78,12 +80,6 @@ export class AuthService {
     throw new UnauthorizedException('Невірні дані для входу');
   }
 
-
-
-
-
-
-
   private async validatePasswordOrThrow(raw: string, hashed: string): Promise<void> {
     const isValid = await bcrypt.compare(raw, hashed);
     if (!isValid) {
@@ -128,4 +124,15 @@ export class AuthService {
     ]);
 
   }
+
+  public async refreshTokens(dto: RefreshTokenReqDto): Promise<TokenPairResDto> {
+    const payload = await this.tokenService.verifyToken(dto.refreshToken, TokenType.REFRESH);
+
+    const isUser = payload.roleId !== RoleEnum.MANAGER;
+
+    const tokens = await this.generateAndStoreTokens(payload.userId, payload.roleId, isUser);
+
+    return tokens;
+  }
+
 }

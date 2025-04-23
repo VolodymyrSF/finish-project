@@ -22,6 +22,7 @@ import { runInTransaction } from '../../utils/run-in-transaction';
 import { buildOrderFilterObject } from '../../helpers/buildOrderFilterObject';
 import { mapOrderToResponse } from '../../helpers/order.mapper';9
 import { OrderResponseDto } from './dto/res/order.response.dto';
+import { PaginatedOrdersResponseDto } from './dto/res/paginated-orders.res.dto';
 
 @Injectable()
 export class OrdersService {
@@ -130,14 +131,21 @@ export class OrdersService {
   async getFilteredOrders(
     filters: FilterOrdersDto,
     user: UserEntity,
-  ): Promise<OrderResponseDto[]> {
+  ): Promise<PaginatedOrdersResponseDto> {
     const where = buildOrderFilterObject(filters, user);
-
-    const orders = await this.ordersRepository.find({
+    const [orders, total] = await this.ordersRepository.findAndCount({
       where,
+      skip: (filters.page - 1) * 25,
+      take: 25,
+      order: { [filters.orderBy]: filters.order },
       relations: ['manager', 'group'],
     });
 
-    return orders.map(mapOrderToResponse);
+
+    return {
+      orders: orders.map(mapOrderToResponse),
+      total,
+      totalPages: Math.ceil(total / 25),
+    };
   }
-}
+  }

@@ -51,10 +51,11 @@ export class ManagersController {
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Отримати інформацію про поточного менеджера' })
   async getCurrentManager(@Req() req) {
-    if (req.user.role.name !== RoleEnum.MANAGER) {
-      throw new BadRequestException('Цей маршрут доступний тільки для менеджерів');
+    if (req.user.role.name === RoleEnum.MANAGER) {
+      return this.managersService.getManagerById(req.user.id);
+    } else if (req.user.role.name === RoleEnum.ADMIN) {
+      return this.managersService.getAdminInfo(req.user.id);
     }
-    return this.managersService.getManagerById(req.user.id);
   }
 
 
@@ -72,24 +73,6 @@ export class ManagersController {
     return this.managersService.generatePasswordResetLink(email);
   }
 
-/*
-  @Get('activate/:token')
-  @ApiOperation({ summary: 'Перевірка токена для активації менеджера' })
-  @UseGuards(JwtAccessGuard, AdminGuard)
-  async activateManager(@Param('token') token: string) {
-    return this.managersService.activateManager(token);
-  }
-
-
-
-  @Get('activate/reset-password/:token')
-  @UseGuards(JwtAccessGuard, AdminGuard)
-  @ApiOperation({ summary: 'Перевірка токена для скидання пароля' })
-  async validateResetPasswordToken(@Param('token') token: string) {
-    return this.managersService.validateResetPasswordToken(token);
-  }
-
- */
 
   @Get(':id')
   @UseGuards(JwtAccessGuard, AdminGuard)

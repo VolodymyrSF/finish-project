@@ -91,6 +91,23 @@ export class ManagersService {
     };
   }
 
+  async getAdminInfo(userId: string) {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+      relations: ['role']
+    });
+
+    if (!user) throw new NotFoundException('Користувач не знайдений');
+
+    // Для адміна може не бути статистики замовлень, або можна спробувати отримати, якщо потрібно
+    // const stats = await getManagerOrderStats(this.ordersRepository, userId);
+
+    return {
+      // orderStats: stats, // Якщо потрібна статистика для адміна
+      admin: stripPassword(user), // Використовуйте той же метод stripPassword або аналогічний
+    };
+  }
+
   async updateManager(managerId: string, dto: Partial<CreateManagerDto>) {
     const manager = await this.managersRepository.findOne({ where: { id: managerId } });
     if (!manager) throw new NotFoundException('Менеджер не знайдений');

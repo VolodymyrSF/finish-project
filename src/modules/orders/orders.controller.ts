@@ -28,22 +28,21 @@ export class OrdersController {
   ) {
     const {
       page = 1,
-      orderBy = 'created_at',
+      orderBy = 'id',
       order = 'DESC',
       ...filterParams
     } = filters;
 
     if (Object.keys(filterParams).length > 0) {
-      return await this.ordersService.getFilteredOrders({ page, orderBy, order, ...filterParams }, user);
+      const filtered = await this.ordersService.getFilteredOrders(
+        { page, orderBy, order, ...filterParams },
+        user,
+      );
+      return {
+        ...filtered,
+        page,
+      };
     }
-
-    const limit = 25;
-    const result = await this.ordersService.getOrders(page, limit, orderBy, order);
-
-    return {
-      ...result,
-      page,
-    };
   }
 
   @Post(':id/comment')
@@ -73,8 +72,8 @@ export class OrdersController {
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Експорт заявок в Excel' })
   async exportOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity, @Res() res: Response) {
-    const orders = await this.ordersService.getFilteredOrders(filters, user);
-    return exportOrdersToExcel(orders, res);
+    const paginatedOrders = await this.ordersService.getFilteredOrders(filters, user);
+    return exportOrdersToExcel(paginatedOrders.orders, res);
   }
 
 
