@@ -8,7 +8,7 @@ export const mockUser: UserEntity = {
   email: 'john@example.com',
   password: 'hashedPassword',
   role: {
-    id: '10', // UUID as string
+    id: '10',
     name: RoleEnum.MANAGER,
     users: []
   } as RoleEntity,
