@@ -7,6 +7,7 @@ import { SwaggerHelper } from './helpers/swagger.helpers';
 import { AppConfig } from './config/config.type';
 import { SeedService } from '../src/modules/seed/seed.service';
 import cookieParser from 'cookie-parser';
+import { DataSource } from 'typeorm';
 
 
 async function bootstrap() {
@@ -22,7 +23,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
 
 
   app.enableCors({

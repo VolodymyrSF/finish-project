@@ -13,7 +13,7 @@ export class FilterOrdersDto {
   @ApiPropertyOptional({ description: 'Поле для сортування', default: 'created_at' })
   @IsOptional()
   @IsString()
-  orderBy?: string = 'created_at';
+  orderBy?: string = 'id';
 
   @ApiPropertyOptional({ description: 'Напрямок сортування', enum: ['ASC', 'DESC'], default: 'DESC' })
   @IsOptional()

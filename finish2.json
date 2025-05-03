@@ -250,7 +250,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/orders?sum=1200&page=1&orderBy=id&order=DESC",
+							"raw": "{{base_url}}/orders",
 							"host": [
 								"{{base_url}}"
 							],
@@ -305,7 +305,8 @@
 								},
 								{
 									"key": "sum",
-									"value": "1200"
+									"value": "1200",
+									"disabled": true
 								},
 								{
 									"key": "onlyMy",
@@ -319,24 +320,22 @@
 								},
 								{
 									"key": "page",
-									"value": "1"
-								},
-								{
-									"key": "orderBy",
-									"value": "id"
-								},
-								{
-									"key": "order",
-									"value": "DESC"
-								},
-								{
-									"key": "utm",
-									"value": "gad",
+									"value": "1",
 									"disabled": true
 								},
 								{
-									"key": "msg",
-									"value": "first",
+									"key": "orderBy",
+									"value": "id",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "DESC",
+									"disabled": true
+								},
+								{
+									"key": "manager",
+									"value": "тест123",
 									"disabled": true
 								}
 							]
