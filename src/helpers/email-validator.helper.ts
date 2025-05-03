@@ -13,6 +13,7 @@ export function IsStrictEmail(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any, _args: ValidationArguments) {
+          if (typeof value !== 'string' || !value.includes('@')) return false;
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           const domainPart = value.split('@')[1];
           const isAscii = /^[\x00-\x7F]*$/.test(domainPart);

@@ -251,47 +251,4 @@ export class ManagersService {
   }
 
 
-
-
-
-  /*
-  async setPassword(dto: UpdatePasswordDto) {
-    console.log('setPassword викликано, dto:', dto);
-    let payload;
-    try {
-      payload = await this.tokenService.verifyToken(dto.token, TokenType.RESET);
-    } catch (errorReset) {
-      try {
-        payload = await this.tokenService.verifyToken(dto.token, TokenType.ACTIVATE);
-      } catch (errorActivate) {
-        throw new BadRequestException('Недійсний або прострочений токен');
-      }
-    }
-
-
-    if (payload.email !== dto.email) {
-      throw new BadRequestException('Токен не відповідає email');
-    }
-
-    const manager = await this.managersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
-    if (!manager || !manager.isActive) {
-      throw new BadRequestException('Менеджер не знайдений або не активований');
-    }
-
-    const user = await this.usersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
-    if (!user) {
-      throw new BadRequestException('Менеджер не знайдений або не активований');
-    }
-
-    manager.password = await bcrypt.hash(dto.password, 10);
-    await this.managersRepository.save(manager);
-
-    user.password = await bcrypt.hash(dto.password, 10);
-    await this.usersRepository.save(user);
-
-    return { message: 'Пароль встановлено. Тепер ви можете увійти.' };
-
-  }
-
-   */
 }

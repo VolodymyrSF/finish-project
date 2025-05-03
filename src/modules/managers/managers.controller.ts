@@ -61,7 +61,6 @@ export class ManagersController {
 
   @Put('set-password')
   @ApiOperation({ summary: 'Активація менеджера Або скидання паролю' })
-  @UseGuards(JwtAccessGuard, AdminGuard)
   async setPassword(@Body() dto: UpdatePasswordDto) {
     return this.managersService.setPassword(dto);
   }

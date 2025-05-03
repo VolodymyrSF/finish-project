@@ -148,4 +148,16 @@ export class OrdersService {
       totalPages: Math.ceil(total / 25),
     };
   }
+  async getAllFilteredOrders(
+    filters: FilterOrdersDto,
+    user: UserEntity,
+  ): Promise<OrderEntity[]> {
+    const where = buildOrderFilterObject(filters, user);
+    return this.ordersRepository.find({
+      where,
+      order: { [filters.orderBy]: filters.order },
+      relations: ['manager', 'group'],
+    });
   }
+
+}

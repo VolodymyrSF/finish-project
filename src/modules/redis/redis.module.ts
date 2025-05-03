@@ -6,7 +6,9 @@ import { Config, RedisConfig } from '../../config/config.type';
 import { REDIS_CLIENT } from './models/redis.constants';
 import { RedisService } from './services/redis.service';
 
+
 @Module({
+
   providers: [
     {
       provide: REDIS_CLIENT,

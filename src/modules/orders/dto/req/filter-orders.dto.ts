@@ -1,14 +1,13 @@
-
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsBoolean, IsNumber, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsIn, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class FilterOrdersDto {
-
   @ApiPropertyOptional({ description: 'Номер сторінки', default: 1 })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
-  @IsNumber()
+  @IsNumber({}, { message: 'Page має бути числом' })
+  @Min(1, { message: 'Page має бути більше або дорівнювати 1' })
   page?: number = 1;
 
   @ApiPropertyOptional({ description: 'Поле для сортування', default: 'created_at' })
@@ -24,75 +23,81 @@ export class FilterOrdersDto {
   @ApiPropertyOptional({ description: 'Фільтр по ID заявки' })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
-  @IsNumber()
+  @IsNumber({}, { message: 'ID має бути числом' })
   id?: number;
 
-  @ApiPropertyOptional({ description: 'Фільтр по імені' })
+  @ApiPropertyOptional({ description: 'Ім’я' })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по прізвищу' })
+  @ApiPropertyOptional({ description: 'Прізвище' })
   @IsOptional()
   @IsString()
   surname?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по email' })
+  @ApiPropertyOptional({ description: 'Email' })
   @IsOptional()
   @IsString()
   email?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по телефону' })
+  @ApiPropertyOptional({ description: 'Телефон' })
   @IsOptional()
   @IsString()
   phone?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по віку' })
+  @ApiPropertyOptional({ description: 'Вік' })
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
-  @IsNumber()
+  @IsNumber({}, { message: 'Age має бути числом' })
+  @Min(0, { message: 'Age має бути більше або дорівнювати 0' })
+  @Max(120, { message: 'Age має бути не більше 120' })
   age?: number;
 
-  @ApiPropertyOptional({ description: 'Фільтр по курсу' })
+  @ApiPropertyOptional({ description: 'Курс' })
   @IsOptional()
   @IsString()
   course?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по формату курсу' })
+  @ApiPropertyOptional({ description: 'Формат курсу' })
   @IsOptional()
   @IsString()
   course_format?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по типу курсу' })
+  @ApiPropertyOptional({ description: 'Тип курсу' })
   @IsOptional()
   @IsString()
   course_type?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по статусу' },)
+  @ApiPropertyOptional({ description: 'Статус' })
   @IsOptional()
   @IsString()
   status?: string;
 
-  @ApiPropertyOptional({ description: 'Фільтр по utm' },)
-  @IsOptional()
-  @IsString()
-  utm?: string;
-
-  @ApiPropertyOptional({ description: 'Фільтр по msg' },)
-  @IsOptional()
-  @IsString()
-  msg?: string;
-
-  @ApiPropertyOptional({ description: 'Фільтр по сумі' })
+  @ApiPropertyOptional({ description: 'Сума' })
   @IsOptional()
   @Transform(({ value }) => parseFloat(value))
-  @IsNumber()
+  @IsNumber({}, { message: 'Сума має бути числом' })
   sum?: number;
 
-  @ApiPropertyOptional({ description: 'Фільтр тільки для ваших заявок' })
+  @ApiPropertyOptional({ description: 'Оплачено' })
   @IsOptional()
-  @IsBoolean()
-  @Transform(({ value }) => value === 'true')
-  onlyMy?: boolean;
-}
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber({}, { message: 'Вже оплачено має бути числом' })
+  alreadyPaid?: number;
 
+  @ApiPropertyOptional({ description: 'Група' })
+  @IsOptional()
+  @IsString()
+  group?: string;
+
+  @ApiPropertyOptional({ description: 'Дата створення' })
+  @IsOptional()
+  @IsString()
+  created_at?: string;
+
+  @ApiPropertyOptional({ description: 'Менеджер' })
+  @IsOptional()
+  @IsString()
+  manager?: string;
+}

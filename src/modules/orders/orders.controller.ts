@@ -38,10 +38,10 @@ export class OrdersController {
         { page, orderBy, order, ...filterParams },
         user,
       );
-      return {
-        ...filtered,
-        page,
-      };
+      return { ...filtered, page };
+    } else {
+      const orders = await this.ordersService.getOrders(page, 25, orderBy, order);
+      return { ...orders, page };
     }
   }
 
@@ -71,10 +71,15 @@ export class OrdersController {
   @Get('export')
   @UseGuards(JwtAccessGuard)
   @ApiOperation({ summary: 'Експорт заявок в Excel' })
-  async exportOrders(@Query() filters: FilterOrdersDto, @CurrentUser() user: UserEntity, @Res() res: Response) {
-    const paginatedOrders = await this.ordersService.getFilteredOrders(filters, user);
-    return exportOrdersToExcel(paginatedOrders.orders, res);
+  async exportOrders(
+    @Query() filters: FilterOrdersDto,
+    @CurrentUser() user: UserEntity,
+    @Res() res: Response
+  ) {
+    const orders = await this.ordersService.getAllFilteredOrders(filters, user);
+    await exportOrdersToExcel(orders, res); // <-- Await the helper
   }
+
 
 
 
