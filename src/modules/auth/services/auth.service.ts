@@ -130,6 +130,8 @@ export class AuthService {
 
     const isUser = payload.roleId !== RoleEnum.MANAGER;
 
+    await this.refreshTokenRepository.delete({ refreshToken: dto.refreshToken });
+
     const tokens = await this.generateAndStoreTokens(payload.userId, payload.roleId, isUser);
 
     return tokens;

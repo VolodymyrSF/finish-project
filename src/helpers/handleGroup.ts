@@ -7,7 +7,10 @@ export async function handleGroup(
   dto: UpdateOrderDto,
   manager: EntityManager,
 ): Promise<GroupEntity | undefined> {
-  if (!dto.groupName) return undefined;
+  if (dto.groupName === null || dto.groupName === '') {
+    return null;
+  }
+
 
   let group = await manager.findOne(GroupEntity, { where: { name: dto.groupName } });
 

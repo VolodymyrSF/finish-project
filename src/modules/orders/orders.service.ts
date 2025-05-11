@@ -118,7 +118,7 @@ export class OrdersService {
 
       if (dto.groupName) {
         const group = await handleGroup(dto, manager);
-        order.group = group;
+        order.group = group || null;
       }
 
       applyOrderUpdateMapping(order, dto, ['GroupDescription']);

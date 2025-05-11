@@ -199,16 +199,21 @@ export class ManagersService {
       }
     }
 
+    /*
     if (payload.email !== dto.email) {
       throw new BadRequestException('Токен не відповідає email');
     }
 
-    const manager = await this.managersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+     */
+
+    const emailFromToken = payload.email;
+
+    const manager = await this.managersRepository.findOne({ where: { email: emailFromToken.toLowerCase() } });
     if (!manager || (!manager.isActive && !isActivation)) {
       throw new BadRequestException('Менеджер не знайдений або не активований');
     }
 
-    const user = await this.usersRepository.findOne({ where: { email: dto.email.toLowerCase() } });
+    const user = await this.usersRepository.findOne({ where: { email: emailFromToken.toLowerCase() } });
     if (!user) {
       throw new BadRequestException('Менеджер не знайдений або не активований');
     }
