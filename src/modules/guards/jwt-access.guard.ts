@@ -49,11 +49,12 @@ export class JwtAccessGuard implements CanActivate {
       throw new UnauthorizedException('Токен доступу не знайдено');
     }
 
+    let userData = null;
+
     const user = await this.userRepository.findOne({
       where: { id: payload.userId },
+      relations: ['role'],
     });
-
-    let userData = null;
 
     if (user) {
       userData = {
@@ -66,27 +67,31 @@ export class JwtAccessGuard implements CanActivate {
       };
     } else {
       const manager = await this.managerRepository.findOne({
-        where: { id: payload.userId },
+        where: { userId: payload.userId },
+        relations: ['user', 'user.role'],
       });
 
       if (manager) {
         userData = {
-          id: manager.id,
+          id: manager.user.id,
+          managerId: manager.id,
           name: manager.name,
           surname: manager.surname,
           email: manager.email,
           phone: manager.phone,
           isActive: manager.isActive,
           isBanned: manager.isBanned,
+          role: manager.user.role,
           createdAt: manager.created_at,
           updatedAt: manager.updated_at,
         };
       } else {
-        throw new UnauthorizedException('Користувача не знайдено');
+        throw new UnauthorizedException('Користувача або менеджера не знайдено');
       }
     }
+
 
     request.user = userData;
     return true;
   }
-  }
+}

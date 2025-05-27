@@ -1,6 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne, JoinColumn,
+} from 'typeorm';
 import { OrderEntity } from './orders.entity';
 import { RefreshTokenEntity } from './refresh-token.entity';
+import { UserEntity } from './user.entity';
 
 @Entity('managers')
 export class ManagerEntity {
@@ -30,6 +39,13 @@ export class ManagerEntity {
 
   @OneToMany(() => OrderEntity, (order) => order.manager)
   orders: OrderEntity[];
+
+  @Column({ nullable: true })
+  userId: string;
+
+  @ManyToOne(() => UserEntity, { eager: true, onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
 
   @CreateDateColumn()
   created_at: Date;

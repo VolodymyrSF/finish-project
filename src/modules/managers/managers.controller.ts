@@ -49,12 +49,12 @@ export class ManagersController {
 
   @Get('me')
   @UseGuards(JwtAccessGuard)
-  @ApiOperation({ summary: 'Отримати інформацію про поточного менеджера' })
-  async getCurrentManager(@Req() req) {
+  @ApiOperation({ summary: 'Отримати інформацію про поточного користувача' })
+  async getCurrentUser(@Req() req) {
     if (req.user.role.name === RoleEnum.MANAGER) {
-      return this.managersService.getManagerById(req.user.id);
+      return this.managersService.getManagerById(req.user.managerId);
     } else if (req.user.role.name === RoleEnum.ADMIN) {
-      return this.managersService.getAdminInfo(req.user.id);
+      return this.managersService.getManagerById(req.user.id);
     }
   }
 

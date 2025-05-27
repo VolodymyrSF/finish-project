@@ -116,9 +116,13 @@ export class OrdersService {
         }
       }
 
-      if (dto.groupName) {
-        const group = await handleGroup(dto, manager);
-        order.group = group || null;
+      if (dto.groupName !== undefined) {
+        if (dto.groupName === null || dto.groupName === '') {
+          order.group = null;
+        } else {
+          const group = await handleGroup(dto, manager);
+          order.group = group || null;
+        }
       }
 
       applyOrderUpdateMapping(order, dto, ['GroupDescription']);

@@ -37,8 +37,17 @@ export class AuthService {
     const user = await this.userRepository.findOne({
       where: { email: dto.email },
       relations: ['role'],
-      select: ['id', 'password', 'name'],
+      select: ['id', 'password', 'name', 'role'], // Обов'язково вибираємо role
     });
+
+    if (user) {
+      await this.validatePasswordOrThrow(dto.password, user.password);
+      const tokens = await this.generateAndStoreTokens(user.id, user.role.id, true);
+      return {
+        user: UserMapper.toResDto(user),
+        tokens,
+      };
+    }
 
     const manager = await this.managersRepository.findOne({
       where: { email: dto.email },
@@ -59,20 +68,9 @@ export class AuthService {
     if (manager) {
       await this.validatePasswordOrThrow(dto.password, manager.password);
       assertManagerLoginAllowed(manager);
-
       const tokens = await this.generateAndStoreTokens(manager.id, RoleEnum.MANAGER, false);
-
       return {
         user: UserMapper.toManagerAuthResDto(manager),
-        tokens,
-      };
-    }else if (user) {
-      await this.validatePasswordOrThrow(dto.password, user.password);
-
-      const tokens = await this.generateAndStoreTokens(user.id, user.role.id, true);
-
-      return {
-        user: UserMapper.toResDto(user),
         tokens,
       };
     }
@@ -81,6 +79,8 @@ export class AuthService {
   }
 
   private async validatePasswordOrThrow(raw: string, hashed: string): Promise<void> {
+    console.log('Сирий пароль для порівняння:', raw);
+    console.log('Хешований пароль для порівняння:', hashed);
     const isValid = await bcrypt.compare(raw, hashed);
     if (!isValid) {
       throw new UnauthorizedException('Невірні дані для входу');
