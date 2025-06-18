@@ -1,11 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 import { IsStrictEmail } from '../../../helpers/email-validator.helper';
 
 export class CreateManagerDto {
   @ApiProperty({ description: "Ім'я менеджера", example: 'Олександр' })
   @IsNotEmpty()
   @IsString()
+  @MaxLength(100, { message: "Ім'я не може бути довшим за 100 символів" })
   name: string;
 
   @ApiProperty({ description: "Прізвище менеджера", example: 'Петренко' })

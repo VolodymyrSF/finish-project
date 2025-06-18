@@ -50,7 +50,7 @@ export async function exportOrdersToExcel(orders: any[], res: Response) {
       utm: order.utm || '',
       comments: commentsFormatted,
       manager: order.manager ? order.manager.name : '',
-      group: order.group ? order.group.name : '',
+      group: order.group ? order.group.id : '',
     });
   });
 

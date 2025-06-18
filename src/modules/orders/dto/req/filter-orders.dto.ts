@@ -100,4 +100,13 @@ export class FilterOrdersDto {
   @IsOptional()
   @IsString()
   manager?: string;
+
+  @IsOptional()
+  @IsString()
+  createdFrom?: string;
+
+  @IsOptional()
+  @IsString()
+  createdTo?: string;
+
 }

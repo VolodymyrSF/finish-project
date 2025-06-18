@@ -77,7 +77,7 @@ export class OrdersController {
     @Res() res: Response
   ) {
     const orders = await this.ordersService.getAllFilteredOrders(filters, user);
-    await exportOrdersToExcel(orders, res); // <-- Await the helper
+    await exportOrdersToExcel(orders, res);
   }
 
 

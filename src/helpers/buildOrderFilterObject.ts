@@ -1,4 +1,4 @@
-import { Equal, FindOptionsWhere, Like } from 'typeorm';
+import { Between, Equal, FindOptionsWhere, LessThanOrEqual, Like, MoreThanOrEqual } from 'typeorm';
 import { FilterOrdersDto } from '../modules/orders/dto/req/filter-orders.dto';
 import { UserEntity } from '../database/entities/user.entity';
 import { Status } from '../database/entities/enums/order-status.enum';
@@ -47,11 +47,19 @@ export function buildOrderFilterObject(filters: FilterOrdersDto, user: UserEntit
   }
 
   if (filters.created_at) {
-    where.created_at = filters.created_at; // Можливо, треба допилити під конкретний формат
+    where.created_at = filters.created_at;
   }
 
   if (filters.manager) {
     where.manager = { name: filters.manager };
+  }
+
+  if (filters.createdFrom && filters.createdTo) {
+    where.created_at = Between(new Date(filters.createdFrom), new Date(filters.createdTo));
+  } else if (filters.createdFrom) {
+    where.created_at = MoreThanOrEqual(new Date(filters.createdFrom));
+  } else if (filters.createdTo) {
+    where.created_at = LessThanOrEqual(new Date(filters.createdTo));
   }
 
   return where;

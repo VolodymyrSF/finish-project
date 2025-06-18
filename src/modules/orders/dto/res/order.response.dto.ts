@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ManagerResponseDto } from './manager.res.dto';
 import { GroupResponseDto } from './group.response.dto';
 import { CommentResponseDto } from './comment.response.dto';
+import { GroupIdOnlyDto } from './group-id-only.dto';
 
 export class OrderResponseDto {
   @ApiProperty()
@@ -66,10 +67,10 @@ export class OrderResponseDto {
   @Type(() => ManagerResponseDto)
   manager: ManagerResponseDto;
 
-  @ApiProperty({ type: () => GroupResponseDto, nullable: true })
+  @ApiProperty({ type: () => GroupIdOnlyDto, nullable: true })
   @Expose()
-  @Type(() => GroupResponseDto)
-  group: GroupResponseDto;
+  @Type(() => GroupIdOnlyDto)
+  group: GroupIdOnlyDto;
 
   @ApiProperty({ type: () => [CommentResponseDto], required: false })
   @Expose()

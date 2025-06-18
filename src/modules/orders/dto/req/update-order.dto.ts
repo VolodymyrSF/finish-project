@@ -1,9 +1,9 @@
-import { IsOptional, IsString, IsIn, IsNumber, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsNumber, Min, Max, Matches } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Course } from '../../../../database/entities/enums/course.enum';
 import { CourseType } from '../../../../database/entities/enums/course-type.enum';
 import { CourseFormat } from '../../../../database/entities/enums/course-format.enum';
-import { UpdateStatus } from '../../../../database/entities/enums/update-status.enum';
+import { Status } from '../../../../database/entities/enums/order-status.enum';
 
 export class UpdateOrderDto {
   @ApiPropertyOptional({ description: 'Ім’я клієнта' })
@@ -23,13 +23,14 @@ export class UpdateOrderDto {
 
   @ApiPropertyOptional({ description: 'Телефон клієнта' })
   @IsOptional()
+  @Matches(/^\+?[0-9]{10,15}$/, { message: 'Телефон має бути валідним номером' })
   @IsString()
   phone?: string;
 
   @ApiPropertyOptional({ description: 'Вік клієнта' })
   @IsOptional()
   @IsNumber({}, { message: 'Вік має бути числом' })
-  @Min(0, { message: 'Вік має бути більшим або дорівнювати 0' })
+  @Min(1, { message: 'Вік має бути більшим 0' })
   @Max(120, { message: 'Вік має бути не більше 120' })
   age?: number;
 
@@ -48,9 +49,9 @@ export class UpdateOrderDto {
   @IsIn(Object.values(CourseFormat))
   course_format?: string;
 
-  @ApiPropertyOptional({ description: 'Статус заявки', enum: UpdateStatus })
+  @ApiPropertyOptional({ description: 'Статус заявки', enum: Status })
   @IsOptional()
-  @IsIn(Object.values(UpdateStatus))
+  @IsIn(Object.values(Status))
   status?: string;
 
   @ApiPropertyOptional({ description: 'Назва групи для заявки' })
@@ -66,6 +67,7 @@ export class UpdateOrderDto {
   @ApiPropertyOptional({ description: 'Сума заявки' })
   @IsOptional()
   @IsNumber({}, { message: 'Сума має бути числом' })
+  @Min(0.01, { message: 'Сума має бути більше 0' })
   sum?: number;
 
   @ApiPropertyOptional({ description: 'Частина суми, яка вже оплачена' })
