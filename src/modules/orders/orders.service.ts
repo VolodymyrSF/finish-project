@@ -99,9 +99,8 @@ export class OrdersService {
 
       if (dto.status === Status.New) {
         order.status = Status.New;
-        order.manager = null;
       } else {
-        if (order.manager && order.manager.id !== user.id) {
+        if (order.manager && order.manager.userId !== user.id) {
           throw new ForbiddenException('У вас немає прав для цієї заявки');
         }
 

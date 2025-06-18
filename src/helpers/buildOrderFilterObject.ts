@@ -46,10 +46,6 @@ export function buildOrderFilterObject(filters: FilterOrdersDto, user: UserEntit
     where.group = { name: filters.group };
   }
 
-  if (filters.created_at) {
-    where.created_at = filters.created_at;
-  }
-
   if (filters.manager) {
     where.manager = { name: filters.manager };
   }

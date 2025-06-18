@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsIn, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsIn, Min, Max, IsDateString } from 'class-validator';
 import { Transform } from 'class-transformer';
 
 export class FilterOrdersDto {
@@ -102,11 +102,12 @@ export class FilterOrdersDto {
   manager?: string;
 
   @IsOptional()
-  @IsString()
+  @IsDateString()
   createdFrom?: string;
 
   @IsOptional()
-  @IsString()
+  @IsDateString()
   createdTo?: string;
+
 
 }

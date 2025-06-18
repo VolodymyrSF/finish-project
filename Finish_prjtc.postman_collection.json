@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \n \"email\": \"new3x@example.com\",\n  \"password\": \"SecurePass123!\"\n\n  //\"email\":\"admin@gmail.com\",\n  //\"password\":\"admin\"\n  \n}"
+							"raw": "{\n    \n //\"email\": \"new3x@example.com\",\n  //\"password\": \"SecurePass123!\"\n\n \"email\":\"admin@gmail.com\",\n \"password\":\"admin\"\n  \n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/login",
@@ -101,7 +101,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "422"
+									"value": "500"
 								}
 							]
 						}
@@ -120,7 +120,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "\n{\n  \"comment\": \"New comment from manager new3x\"\n}"
+							"raw": "\n{\n  \"comment\": \"2 New comment from manager admin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/orders/:id/comment",
@@ -135,7 +135,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "422"
+									"value": "500"
 								}
 							]
 						}
@@ -238,6 +238,16 @@
 								{
 									"key": "msg",
 									"value": "first"
+								},
+								{
+									"key": "createdFrom",
+									"value": "2022-01-10 16:17:35.000000",
+									"disabled": true
+								},
+								{
+									"key": "createdTo",
+									"value": "2022-05-29 17:54:16.000000",
+									"disabled": true
 								}
 							]
 						}
@@ -250,7 +260,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/orders",
+							"raw": "{{base_url}}/orders?id=500&page=1&order=DESC",
 							"host": [
 								"{{base_url}}"
 							],
@@ -315,13 +325,11 @@
 								},
 								{
 									"key": "id",
-									"value": "400",
-									"disabled": true
+									"value": "500"
 								},
 								{
 									"key": "page",
-									"value": "1",
-									"disabled": true
+									"value": "1"
 								},
 								{
 									"key": "orderBy",
@@ -330,12 +338,21 @@
 								},
 								{
 									"key": "order",
-									"value": "DESC",
-									"disabled": true
+									"value": "DESC"
 								},
 								{
 									"key": "manager",
 									"value": "тест123",
+									"disabled": true
+								},
+								{
+									"key": "createdFrom",
+									"value": "2022-01-10 16:17:35.000000",
+									"disabled": true
+								},
+								{
+									"key": "createdTo",
+									"value": "2022-05-29 17:54:16.000000",
 									"disabled": true
 								}
 							]
@@ -361,7 +378,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"new3x\",\n  \"surname\": \"newtest3x\",\n  \"email\": \"new3x@example.com\",\n  \"phone\": \"+380971234567\"\n}"
+							"raw": "{\n  \"name\": \"oleg\",\n  \"surname\": \"mlshn\",\n  \"email\": \"mlshn@example.com\",\n  \"phone\": \"+380971234777\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/managers",
@@ -457,7 +474,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "cf284c71-011c-457b-8800-7b9400853a24"
+									"value": "6c9f59a5-cca7-43b6-9121-a982c8827340"
 								}
 							]
 						}
@@ -477,7 +494,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \n  \"surname\": \"newtest3xx\"\n  \n}"
+							"raw": "{\n  \n  \"surname\": \"malshni\"\n  \n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/managers/:id",
@@ -491,7 +508,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "cf284c71-011c-457b-8800-7b9400853a24"
+									"value": "3e123cca-5181-4b73-aa3d-c80837186d60"
 								}
 							]
 						}
@@ -515,7 +532,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "1833ca26-628c-46bd-91c7-488919401de9"
+									"value": "db764bc4-c14c-450b-8921-da0100bab35b"
 								}
 							]
 						}
@@ -590,7 +607,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "b717eed4-3a0b-4374-9b63-89faaf9df824"
+									"value": "db764bc4-c14c-450b-8921-da0100bab35b"
 								}
 							]
 						}
@@ -622,7 +639,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "cf284c71-011c-457b-8800-7b9400853a24"
+									"value": "db764bc4-c14c-450b-8921-da0100bab35b"
 								}
 							]
 						}
@@ -642,7 +659,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"new3x@example.com\"\n}"
+							"raw": "{\n  \"email\": \"mlshn@example.com\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/managers/reset-password",
@@ -670,7 +687,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"new3x@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5ldzN4QGV4YW1wbGUuY29tIiwidHlwZSI6InJlc2V0IiwiaWF0IjoxNzQ0NzkzMTQyLCJleHAiOjE3NDQ3OTQ5NDJ9.pzRp7z7vpARblWbeN2D8AZFj-Dfa5mLexwT_0jHGIrI\"\n}"
+							"raw": "{\n  \"password\": \"SecurePass123!\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYW5hZ2VySWQiOiJkYjc2NGJjNC1jMTRjLTQ1MGItODkyMS1kYTAxMDBiYWIzNWIiLCJlbWFpbCI6Im1sc2huQGV4YW1wbGUuY29tIiwidHlwZSI6ImFjdGl2YXRlIiwiaWF0IjoxNzUwMjQzNzQ2LCJleHAiOjE3NTAyNDU1NDZ9.eNd8OGeNDlrpUHJo9AYO-M4sYHnDbEOOHZ7aAZk-3Lg\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/managers/set-password",
