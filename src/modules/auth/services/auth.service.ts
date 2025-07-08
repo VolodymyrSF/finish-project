@@ -79,8 +79,6 @@ export class AuthService {
   }
 
   private async validatePasswordOrThrow(raw: string, hashed: string): Promise<void> {
-    console.log('Сирий пароль для порівняння:', raw);
-    console.log('Хешований пароль для порівняння:', hashed);
     const isValid = await bcrypt.compare(raw, hashed);
     if (!isValid) {
       throw new UnauthorizedException('Невірні дані для входу');

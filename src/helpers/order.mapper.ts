@@ -3,7 +3,13 @@ import { OrderResponseDto } from '../modules/orders/dto/res/order.response.dto';
 import { OrderEntity } from '../database/entities/orders.entity';
 
 export function mapOrderToResponse(order: OrderEntity): OrderResponseDto {
-  return plainToInstance(OrderResponseDto, order, {
+  const dto = plainToInstance(OrderResponseDto, order, {
     excludeExtraneousValues: true,
   });
+
+  dto.createdAt = order.created_at;
+
+  dto.updatedAt = order.updated_at;
+
+  return dto;
 }

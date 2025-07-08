@@ -33,12 +33,12 @@ export class OrderAccessGuard implements CanActivate {
 
     const allowedRoles = [RoleEnum.MANAGER, RoleEnum.ADMIN];
 
-    // Якщо у замовлення немає менеджера, і користувач - менеджер чи адмін — доступ є
+
     if (allowedRoles.includes(currentUser.role.name) && !order.manager) {
       return true;
     }
 
-    // Перевірка, чи менеджер замовлення відповідає користувачу
+
     if (
       allowedRoles.includes(currentUser.role.name) &&
       order.manager?.userId === currentUser.id

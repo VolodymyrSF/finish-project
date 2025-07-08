@@ -62,6 +62,15 @@ export class OrderResponseDto {
   @Expose()
   alreadyPaid: number;
 
+  @Expose()
+  @ApiProperty()
+  createdAt: Date;
+
+  @Expose()
+  @ApiProperty()
+  updatedAt: Date;
+
+
   @ApiProperty({ type: () => ManagerResponseDto, nullable: true })
   @Expose()
   @Type(() => ManagerResponseDto)

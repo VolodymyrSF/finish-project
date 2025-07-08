@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+  JoinColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { ManagerEntity } from './manager.entity';
 import { GroupEntity } from './group.entity';
 import { Status } from './enums/order-status.enum';
@@ -47,6 +55,9 @@ export class OrderEntity {
 
   @CreateDateColumn({nullable: true})
   created_at: Date;
+
+  @UpdateDateColumn({ nullable: true })
+  updated_at: Date;
 
   @Column({ nullable: true })
   msg: string;

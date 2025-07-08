@@ -22,7 +22,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \n //\"email\": \"new3x@example.com\",\n  //\"password\": \"SecurePass123!\"\n\n \"email\":\"admin@gmail.com\",\n \"password\":\"admin\"\n  \n}"
+							"raw": "{\n    \n \"email\": \"testm@example.com\",\n \"password\": \"SecurePass123!\"\n\n //\"email\":\"admin@gmail.com\",\n //\"password\":\"admin\"\n  \n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/login",
@@ -87,7 +87,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"John\",\n  \"surname\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"0987654321\",\n  \"age\": 25,\n  \"course\": \"FE\",\n  \"course_format\": \"online\",\n  \"course_type\": \"pro\",\n  \"status\": \"New\",\n  \"sum\": 1200,\n  \"alreadyPaid\": 400,\n  \"groupName\": \"Група група група 3x\",\n  \"GroupDescription\":\"нова група група група група 3x\"\n  \n \n}\n"
+							"raw": "{\n  \"name\": \"John\",\n  \"surname\": \"Doee\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"0987654321\",\n  \"age\": 25,\n  \"course\": \"FE\",\n  \"course_format\": \"online\",\n  \"course_type\": \"pro\",\n  \"status\": \"New\",\n  \"sum\": 1200,\n  \"alreadyPaid\": 400,\n  \"groupName\": \"Група група група 3x\",\n  \"GroupDescription\":\"нова група група група група 3x\"\n  \n \n}\n"
 						},
 						"url": {
 							"raw": "{{base_url}}/orders/:id",
@@ -260,7 +260,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/orders?id=500&page=1&order=DESC",
+							"raw": "{{base_url}}/orders?page=1&order=DESC",
 							"host": [
 								"{{base_url}}"
 							],
@@ -325,7 +325,8 @@
 								},
 								{
 									"key": "id",
-									"value": "500"
+									"value": "500",
+									"disabled": true
 								},
 								{
 									"key": "page",
@@ -378,7 +379,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"oleg\",\n  \"surname\": \"mlshn\",\n  \"email\": \"mlshn@example.com\",\n  \"phone\": \"+380971234777\"\n}"
+							"raw": "{\n  \"name\": \"test\",\n  \"surname\": \"manager\",\n  \"email\": \"testm@example.com\",\n  \"phone\": \"+380971234777\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/managers",
@@ -639,7 +640,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "db764bc4-c14c-450b-8921-da0100bab35b"
+									"value": "11177428-22a2-4ca3-be9c-8dbffcbc9f01"
 								}
 							]
 						}
@@ -687,7 +688,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"password\": \"SecurePass123!\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYW5hZ2VySWQiOiJkYjc2NGJjNC1jMTRjLTQ1MGItODkyMS1kYTAxMDBiYWIzNWIiLCJlbWFpbCI6Im1sc2huQGV4YW1wbGUuY29tIiwidHlwZSI6ImFjdGl2YXRlIiwiaWF0IjoxNzUwMjQzNzQ2LCJleHAiOjE3NTAyNDU1NDZ9.eNd8OGeNDlrpUHJo9AYO-M4sYHnDbEOOHZ7aAZk-3Lg\"\n}"
+							"raw": "{\n  \"password\": \"SecurePass123!\",\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJtYW5hZ2VySWQiOiIxMTE3NzQyOC0yMmEyLTRjYTMtYmU5Yy04ZGJmZmNiYzlmMDEiLCJlbWFpbCI6InRlc3RtQGV4YW1wbGUuY29tIiwidHlwZSI6ImFjdGl2YXRlIiwiaWF0IjoxNzUxOTc0MTQxLCJleHAiOjE3NTE5NzU5NDF9.OGk9fJ0iwwgDPNk8Xs_su0-ia8LXLY8l533yoIl8_OI\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/managers/set-password",

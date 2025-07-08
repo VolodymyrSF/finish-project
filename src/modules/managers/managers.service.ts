@@ -18,6 +18,7 @@ import { runInTransaction } from '../../utils/run-in-transaction';
 import { stripPassword } from '../../utils/strip-password';
 import { getManagerOrderStats } from '../../utils/get-manager-order-stats';
 import { UsedTokenEntity } from '../../database/entities/used-token.entity';
+import { Status } from '../../database/entities/enums/order-status.enum';
 
 @Injectable()
 export class ManagersService {
@@ -279,7 +280,10 @@ export class ManagersService {
       .createQueryBuilder('order')
       .select('order.status', 'status')
       .addSelect('COUNT(*)', 'count')
-      .where('order.manager_id = :managerId', { managerId })
+      .where('order.manager_id = :managerId AND order.status != :newStatus', {
+        managerId,
+        newStatus: Status.New
+      })
       .groupBy('order.status')
       .getRawMany();
 
